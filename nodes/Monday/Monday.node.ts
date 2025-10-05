@@ -14,6 +14,7 @@ import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
 import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
+import * as resourceMapping from './methods/resourceMapping';
 
 export class Monday implements INodeType {
 	description: INodeTypeDescription = {
@@ -77,6 +78,9 @@ export class Monday implements INodeType {
 			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
 			// Legacy methods (for backward compatibility)
 			loadDropdownValues: loadOptionsExtended.loadDropdownValues,
+		},
+		resourceMapping: {
+			getMondayBoardFields: resourceMapping.getMondayBoardFields,
 		},
 	};
 

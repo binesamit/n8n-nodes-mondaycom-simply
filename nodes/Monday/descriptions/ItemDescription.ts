@@ -149,8 +149,39 @@ export const itemFields: INodeProperties[] = [
 		placeholder: '{"status": {"label": "Done"}, "text": "Hello"}',
 	},
 
-	// Simple mode - Column Values (fixedCollection)
-	columnFields,
+	// Simple mode - Resource Mapper for dynamic column fields
+	{
+		displayName: 'Columns',
+		name: 'columnsUi',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
+		},
+		required: true,
+		typeOptions: {
+			loadOptionsDependsOn: ['board'],
+			resourceMapper: {
+				resourceMapperMethod: 'getMondayBoardFields',
+				mode: 'add',
+				fieldWords: {
+					singular: 'column',
+					plural: 'columns',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
+			},
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+	},
+
 	fileUploadNotice,
 
 	// Get All - Limit
