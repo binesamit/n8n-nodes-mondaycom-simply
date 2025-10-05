@@ -60,16 +60,23 @@ export class Monday implements INodeType {
 			loadColumns: loadOptions.loadColumns,
 			loadFormulaColumns: loadOptions.loadFormulaColumns,
 			loadUsers: loadOptions.loadUsers,
-			loadLinkedBoardItems: loadOptions.loadLinkedBoardItems,
+			loadLinkedBoardItems: loadOptionsExtended.loadLinkedBoardItemsExtended,
 			loadStatusValues: loadOptionsExtended.loadStatusValuesForColumn,
-			// New extended methods
+			// Column type loaders
 			loadStatusColumns: loadOptionsExtended.loadStatusColumns,
 			loadDropdownColumns: loadOptionsExtended.loadDropdownColumns,
-			loadDropdownValues: loadOptionsExtended.loadDropdownValues,
 			loadPeopleColumns: loadOptionsExtended.loadPeopleColumns,
-			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
 			loadBoardRelationColumns: loadOptionsExtended.loadBoardRelationColumns,
 			loadTimelineColumns: loadOptionsExtended.loadTimelineColumns,
+			// Value loaders for fixedCollection fields
+			loadStatusValuesForSelectedColumn: loadOptionsExtended.loadStatusValuesForSelectedColumn,
+			loadDropdownValuesForSelectedColumn:
+				loadOptionsExtended.loadDropdownValuesForSelectedColumn,
+			loadLinkedBoardItemsForSelectedColumn:
+				loadOptionsExtended.loadLinkedBoardItemsForSelectedColumn,
+			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
+			// Legacy methods (for backward compatibility)
+			loadDropdownValues: loadOptionsExtended.loadDropdownValues,
 		},
 	};
 

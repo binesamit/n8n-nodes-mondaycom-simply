@@ -65,7 +65,7 @@ export async function loadStatusValuesForColumn(
 	const settings = JSON.parse(column.settings_str);
 	const options = Object.entries(settings.labels || {}).map(([index, label]) => ({
 		name: label as string,
-		value: index,
+		value: label as string, // Return label text, not index
 	}));
 
 	CacheManager.set(cacheKey, options);
@@ -308,5 +308,130 @@ export async function loadTimelineColumns(
 	return timelineColumns.map((col) => ({
 		name: col.title,
 		value: col.id,
+	}));
+}
+
+/**
+ * Load status values for currently selected column in fixedCollection
+ */
+export async function loadStatusValuesForSelectedColumn(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	const columnId = this.getCurrentNodeParameter('column') as string;
+
+	if (!boardId || !columnId) return [];
+
+	const cacheKey = CacheManager.statusValuesKey(boardId, columnId);
+	const cached = CacheManager.get<INodePropertyOptions[]>(cacheKey);
+	if (cached) return cached;
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+	const column = board.columns.find((col) => col.id === columnId);
+
+	if (!column || column.type !== 'status') {
+		return [];
+	}
+
+	const settings = JSON.parse(column.settings_str);
+	const options = Object.entries(settings.labels || {}).map(([index, label]) => ({
+		name: label as string,
+		value: label as string, // Return label text, not index
+	}));
+
+	CacheManager.set(cacheKey, options);
+	return options;
+}
+
+/**
+ * Load dropdown values for currently selected column in fixedCollection
+ */
+export async function loadDropdownValuesForSelectedColumn(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	const columnId = this.getCurrentNodeParameter('column') as string;
+
+	if (!boardId || !columnId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+	const column = board.columns.find((col) => col.id === columnId);
+
+	if (!column || column.type !== 'dropdown') {
+		return [];
+	}
+
+	const settings = JSON.parse(column.settings_str);
+	const labels = settings.labels || [];
+
+	return labels.map((label: any) => ({
+		name: typeof label === 'string' ? label : label.name,
+		value: typeof label === 'string' ? label : label.id,
+	}));
+}
+
+/**
+ * Load linked board items for currently selected column in fixedCollection
+ */
+export async function loadLinkedBoardItemsForSelectedColumn(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	const columnId = this.getCurrentNodeParameter('column') as string;
+
+	if (!boardId || !columnId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	// Get board and find the column
+	const board = await client.getBoard(boardId);
+	const column = board.columns.find((col) => col.id === columnId);
+
+	if (!column || column.type !== 'board_relation') {
+		return [];
+	}
+
+	// Parse linked board IDs from settings
+	const settings = JSON.parse(column.settings_str);
+	const linkedBoardIds = settings.board_ids || [];
+
+	if (linkedBoardIds.length === 0) {
+		return [];
+	}
+
+	// Fetch items from linked boards
+	const items = await client.getItemsFromBoards(linkedBoardIds);
+
+	return items.map((item) => ({
+		name: `${item.name} (#${item.id})`,
+		value: item.id,
 	}));
 }
