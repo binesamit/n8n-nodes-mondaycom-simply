@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Projects/n8n nodes fireberry/**)",
+      "Read(//d/Projects/n8n nodes fireberry/nodes/Fireberry/**)",
+      "Read(//d/Projects/**)",
+      "Bash(npm install)",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
