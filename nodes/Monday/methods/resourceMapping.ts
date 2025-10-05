@@ -32,8 +32,18 @@ export async function getMondayBoardFields(
 	const board = await client.getBoard(boardId);
 	const fields: ResourceMapperField[] = [];
 
+	// System columns to exclude
+	const systemColumns = ['name', 'subitems'];
+	// Read-only column types to exclude
+	const readOnlyTypes = ['mirror', 'formula', 'auto_number', 'creation_log', 'last_updated'];
+
 	// Map each column to a resource mapper field
 	for (const column of board.columns) {
+		// Skip system columns and read-only columns
+		if (systemColumns.includes(column.id) || readOnlyTypes.includes(column.type)) {
+			continue;
+		}
+
 		const field: ResourceMapperField = {
 			id: column.id,
 			displayName: column.title,

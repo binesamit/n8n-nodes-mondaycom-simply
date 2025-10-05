@@ -1,5 +1,6 @@
 import { INodeProperties } from 'n8n-workflow';
-import { columnFields, fileUploadNotice } from './ColumnFields';
+import { airtableStyleColumnFields } from './AirtableStyleFields';
+import { fileUploadNotice } from './ColumnFields';
 
 export const itemOperations: INodeProperties[] = [
 	{
@@ -149,39 +150,8 @@ export const itemFields: INodeProperties[] = [
 		placeholder: '{"status": {"label": "Done"}, "text": "Hello"}',
 	},
 
-	// Simple mode - Resource Mapper for dynamic column fields
-	{
-		displayName: 'Columns',
-		name: 'columnsUi',
-		type: 'resourceMapper',
-		noDataExpression: true,
-		default: {
-			mappingMode: 'defineBelow',
-			value: null,
-		},
-		required: true,
-		typeOptions: {
-			loadOptionsDependsOn: ['board'],
-			resourceMapper: {
-				resourceMapperMethod: 'getMondayBoardFields',
-				mode: 'add',
-				fieldWords: {
-					singular: 'column',
-					plural: 'columns',
-				},
-				addAllFields: true,
-				multiKeyMatch: false,
-			},
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
-			},
-		},
-	},
-
+	// Simple mode - Airtable-style dynamic fields
+	airtableStyleColumnFields,
 	fileUploadNotice,
 
 	// Get All - Limit
