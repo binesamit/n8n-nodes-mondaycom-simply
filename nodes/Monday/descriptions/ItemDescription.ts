@@ -1,6 +1,4 @@
 import { INodeProperties } from 'n8n-workflow';
-import { unifiedColumnFields } from './UnifiedColumnFields';
-import { fileUploadNotice } from './ColumnFields';
 
 export const itemOperations: INodeProperties[] = [
 	{
@@ -150,9 +148,221 @@ export const itemFields: INodeProperties[] = [
 		placeholder: '{"status": {"label": "Done"}, "text": "Hello"}',
 	},
 
-	// Simple mode - Unified column fields (shows all field types)
-	unifiedColumnFields,
-	fileUploadNotice,
+	// Simple mode - Status Column
+	{
+		displayName: 'Status Column',
+		name: 'statusColumn',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadStatusColumns',
+			loadOptionsDependsOn: ['board'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Select a status column to update',
+	},
+	{
+		displayName: 'Status Value',
+		name: 'statusValue',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadStatusValues',
+			loadOptionsDependsOn: ['board', 'statusColumn'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Select the status value',
+	},
+
+	// Dropdown Column
+	{
+		displayName: 'Dropdown Column',
+		name: 'dropdownColumn',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadDropdownColumns',
+			loadOptionsDependsOn: ['board'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Select a dropdown column to update',
+	},
+	{
+		displayName: 'Dropdown Values',
+		name: 'dropdownValues',
+		type: 'multiOptions',
+		typeOptions: {
+			loadOptionsMethod: 'loadDropdownValues',
+			loadOptionsDependsOn: ['board', 'dropdownColumn'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: [],
+		description: 'Select dropdown values (multi-select)',
+	},
+
+	// People Column
+	{
+		displayName: 'People Column',
+		name: 'peopleColumn',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadPeopleColumns',
+			loadOptionsDependsOn: ['board'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Select a people column to update',
+	},
+	{
+		displayName: 'People',
+		name: 'peopleValues',
+		type: 'multiOptions',
+		typeOptions: {
+			loadOptionsMethod: 'loadUsersAndGuests',
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: [],
+		description: 'Select users and guests',
+	},
+
+	// Board Relation Column
+	{
+		displayName: 'Board Relation Column',
+		name: 'boardRelationColumn',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadBoardRelationColumns',
+			loadOptionsDependsOn: ['board'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Select a board relation column',
+	},
+	{
+		displayName: 'Related Items',
+		name: 'boardRelationValues',
+		type: 'multiOptions',
+		typeOptions: {
+			loadOptionsMethod: 'loadLinkedBoardItems',
+			loadOptionsDependsOn: ['board', 'boardRelationColumn'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: [],
+		description: 'Select items from the linked board',
+	},
+
+	// Timeline Column
+	{
+		displayName: 'Timeline Column',
+		name: 'timelineColumn',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadTimelineColumns',
+			loadOptionsDependsOn: ['board'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Select a timeline column',
+	},
+	{
+		displayName: 'Timeline Start Date',
+		name: 'timelineStartDate',
+		type: 'dateTime',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'Start date for timeline',
+	},
+	{
+		displayName: 'Timeline End Date',
+		name: 'timelineEndDate',
+		type: 'dateTime',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description: 'End date for timeline',
+	},
+
+	// File Column Notice
+	{
+		displayName: 'File Upload',
+		name: 'fileNotice',
+		type: 'notice',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['simple'],
+			},
+		},
+		default: '',
+		description:
+			'ℹ️ To upload files to Monday.com:\n1. First upload the file to a storage service (S3, Dropbox, etc.)\n2. Get the public URL of the file\n3. Use the Monday.com API with the file URL\n4. File uploads require special handling - use Advanced mode with JSON',
+	},
 
 	// Get All - Limit
 	{

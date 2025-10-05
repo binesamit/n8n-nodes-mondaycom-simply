@@ -14,8 +14,6 @@ import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
 import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
-import * as resourceMapping from './methods/resourceMapping';
-import * as loadDynamicFields from './methods/loadDynamicFields';
 
 export class Monday implements INodeType {
 	description: INodeTypeDescription = {
@@ -70,27 +68,9 @@ export class Monday implements INodeType {
 			loadPeopleColumns: loadOptionsExtended.loadPeopleColumns,
 			loadBoardRelationColumns: loadOptionsExtended.loadBoardRelationColumns,
 			loadTimelineColumns: loadOptionsExtended.loadTimelineColumns,
-			// Value loaders for fixedCollection fields
-			loadStatusValuesForSelectedColumn: loadOptionsExtended.loadStatusValuesForSelectedColumn,
-			loadDropdownValuesForSelectedColumn:
-				loadOptionsExtended.loadDropdownValuesForSelectedColumn,
-			loadLinkedBoardItemsForSelectedColumn:
-				loadOptionsExtended.loadLinkedBoardItemsForSelectedColumn,
-			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
-			// Legacy methods (for backward compatibility)
+			// Value loaders
 			loadDropdownValues: loadOptionsExtended.loadDropdownValues,
-			// Airtable-style dynamic field loaders
-			loadBoardColumnsAsCollectionOptions: loadDynamicFields.loadBoardColumnsAsCollectionOptions,
-			loadStatusValuesForDynamicColumn: loadDynamicFields.loadStatusValuesForDynamicColumn,
-			loadDropdownValuesForDynamicColumn: loadDynamicFields.loadDropdownValuesForDynamicColumn,
-			loadLinkedBoardItemsForDynamicColumn:
-				loadDynamicFields.loadLinkedBoardItemsForDynamicColumn,
-			// Unified field loaders
-			loadColumnOptionsForSelected: loadDynamicFields.loadColumnOptionsForSelected,
-			loadColumnMultiOptionsForSelected: loadDynamicFields.loadColumnMultiOptionsForSelected,
-		},
-		resourceMapping: {
-			getMondayBoardFields: resourceMapping.getMondayBoardFields,
+			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
 		},
 	};
 

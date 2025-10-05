@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-10-06
+
+### Fixed
+- **Status Column Bug**: Status values now correctly return label text (e.g., "לאישור פנימי") instead of numeric index (e.g., "107")
+- **Board Relation Loading**: Board Relation columns now correctly load items from linked boards using extended method
+
+### Changed
+- Restored version 1.1.0 UI structure after experimental dynamic column approaches resulted in poor UX
+- Removed experimental field definitions (AirtableStyleFields, UnifiedColumnFields, etc.)
+- Simplified codebase to maintain proven working structure
+
+### Technical
+- Fixed `loadStatusValuesForColumn()` to return label as value instead of index
+- Updated Monday.node.ts to use `loadLinkedBoardItemsExtended` for board relation loading
+- Removed unused experimental files: AirtableStyleFields.ts, UnifiedColumnFields.ts, SmartColumnFields.ts, KeyValueColumnFields.ts, JsonBuilderFields.ts, SimpleColumnFields.ts, DynamicColumnFields.ts, loadDynamicFields.ts, resourceMapping.ts
+
 ## [1.1.0] - 2025-10-06
 
 ### Added

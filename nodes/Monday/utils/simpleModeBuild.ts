@@ -1,15 +1,7 @@
 import { IExecuteFunctions } from 'n8n-workflow';
 
 /**
- * Extract column ID from combined value (type|||columnId)
- */
-function extractColumnId(combinedValue: string): string {
-	const parts = combinedValue.split('|||');
-	return parts.length > 1 ? parts[1] : combinedValue;
-}
-
-/**
- * Build column values from Simple Mode unified fields
+ * Build column values from Simple Mode UI fields
  */
 export function buildColumnValuesFromSimpleMode(
 	context: IExecuteFunctions,
@@ -17,73 +9,67 @@ export function buildColumnValuesFromSimpleMode(
 ): Record<string, any> {
 	const columnValues: Record<string, any> = {};
 
-	// Get the fieldsToSend fixedCollection
-	const fieldsToSend = context.getNodeParameter('fieldsToSend', itemIndex, {}) as any;
-
-	if (!fieldsToSend || !fieldsToSend.field || !Array.isArray(fieldsToSend.field)) {
-		return columnValues;
+	// Status column
+	const statusColumn = context.getNodeParameter('statusColumn', itemIndex, '') as string;
+	if (statusColumn) {
+		const statusValue = context.getNodeParameter('statusValue', itemIndex, '') as string;
+		if (statusValue) {
+			columnValues[statusColumn] = { label: statusValue };
+		}
 	}
 
-	// Process each field
-	for (const field of fieldsToSend.field) {
-		const columnIdCombined = field.columnId as string;
-		if (!columnIdCombined) continue;
+	// Dropdown column
+	const dropdownColumn = context.getNodeParameter('dropdownColumn', itemIndex, '') as string;
+	if (dropdownColumn) {
+		const dropdownValues = context.getNodeParameter('dropdownValues', itemIndex, []) as string[];
+		if (dropdownValues.length > 0) {
+			columnValues[dropdownColumn] = { labels: dropdownValues };
+		}
+	}
 
-		const columnId = extractColumnId(columnIdCombined);
-		const columnType = columnIdCombined.split('|||')[0];
-
-		// Build value based on which field the user filled
-		// Check each possible value field and use the appropriate one
-
-		// Single select (Status)
-		if (field.selectValue) {
-			columnValues[columnId] = { label: field.selectValue };
-		}
-		// Multi-select (Dropdown, People, Board Relation)
-		else if (field.multiSelectValues && field.multiSelectValues.length > 0) {
-			switch (columnType) {
-				case 'dropdown':
-					columnValues[columnId] = { labels: field.multiSelectValues };
-					break;
-				case 'people':
-					columnValues[columnId] = {
-						personsAndTeams: field.multiSelectValues.map((id: string) => ({
-							id,
-							kind: id.startsWith('team_') ? 'team' : 'person',
-						})),
-					};
-					break;
-				case 'board_relation':
-					columnValues[columnId] = {
-						linkedPulseIds: field.multiSelectValues.map((id: string) => ({
-							linkedPulseId: parseInt(id, 10),
-						})),
-					};
-					break;
-			}
-		}
-		// Text value
-		else if (field.textValue !== undefined && field.textValue !== '') {
-			columnValues[columnId] = field.textValue;
-		}
-		// Number value
-		else if (field.numberValue !== undefined && field.numberValue !== 0) {
-			columnValues[columnId] = field.numberValue;
-		}
-		// Date value
-		else if (field.dateValue) {
-			columnValues[columnId] = { date: field.dateValue };
-		}
-		// Timeline
-		else if (field.timelineStart && field.timelineEnd) {
-			columnValues[columnId] = {
-				from: field.timelineStart,
-				to: field.timelineEnd,
+	// People column
+	const peopleColumn = context.getNodeParameter('peopleColumn', itemIndex, '') as string;
+	if (peopleColumn) {
+		const peopleValues = context.getNodeParameter('peopleValues', itemIndex, []) as string[];
+		if (peopleValues.length > 0) {
+			columnValues[peopleColumn] = {
+				personsAndTeams: peopleValues.map((id) => ({
+					id,
+					kind: id.startsWith('team_') ? 'team' : 'person',
+				})),
 			};
 		}
-		// Checkbox
-		else if (field.checkboxValue !== undefined) {
-			columnValues[columnId] = { checked: field.checkboxValue ? 'true' : 'false' };
+	}
+
+	// Board Relation column
+	const boardRelationColumn = context.getNodeParameter(
+		'boardRelationColumn',
+		itemIndex,
+		'',
+	) as string;
+	if (boardRelationColumn) {
+		const boardRelationValues = context.getNodeParameter(
+			'boardRelationValues',
+			itemIndex,
+			[],
+		) as string[];
+		if (boardRelationValues.length > 0) {
+			columnValues[boardRelationColumn] = {
+				linkedPulseIds: boardRelationValues.map((id) => ({ linkedPulseId: parseInt(id, 10) })),
+			};
+		}
+	}
+
+	// Timeline column
+	const timelineColumn = context.getNodeParameter('timelineColumn', itemIndex, '') as string;
+	if (timelineColumn) {
+		const startDate = context.getNodeParameter('timelineStartDate', itemIndex, '') as string;
+		const endDate = context.getNodeParameter('timelineEndDate', itemIndex, '') as string;
+		if (startDate && endDate) {
+			columnValues[timelineColumn] = {
+				from: startDate,
+				to: endDate,
+			};
 		}
 	}
 
