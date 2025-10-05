@@ -10,8 +10,10 @@ import {
 
 import { MondayApiClient } from './utils/apiClient';
 import { ColumnMapper } from './utils/columnMapper';
+import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
+import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
 
 export class Monday implements INodeType {
 	description: INodeTypeDescription = {
@@ -59,7 +61,15 @@ export class Monday implements INodeType {
 			loadFormulaColumns: loadOptions.loadFormulaColumns,
 			loadUsers: loadOptions.loadUsers,
 			loadLinkedBoardItems: loadOptions.loadLinkedBoardItems,
-			loadStatusValues: loadOptions.loadStatusValues,
+			loadStatusValues: loadOptionsExtended.loadStatusValuesForColumn,
+			// New extended methods
+			loadStatusColumns: loadOptionsExtended.loadStatusColumns,
+			loadDropdownColumns: loadOptionsExtended.loadDropdownColumns,
+			loadDropdownValues: loadOptionsExtended.loadDropdownValues,
+			loadPeopleColumns: loadOptionsExtended.loadPeopleColumns,
+			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
+			loadBoardRelationColumns: loadOptionsExtended.loadBoardRelationColumns,
+			loadTimelineColumns: loadOptionsExtended.loadTimelineColumns,
 		},
 	};
 
@@ -94,13 +104,8 @@ export class Monday implements INodeType {
 							const jsonInput = this.getNodeParameter('columnValuesJson', i) as string;
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
 						} else {
-							// Simple mode - build column values from UI
-							const columns = this.getNodeParameter('columns', i, {}) as any;
-							if (columns.columnValues) {
-								for (const col of columns.columnValues) {
-									columnValues[col.columnId] = col.columnValue;
-								}
-							}
+							// Simple mode - build column values from dynamic UI fields
+							columnValues = buildColumnValuesFromSimpleMode(this, i);
 						}
 
 						const item = await client.createItem(boardId, itemName, columnValues);
@@ -116,13 +121,8 @@ export class Monday implements INodeType {
 							const jsonInput = this.getNodeParameter('columnValuesJson', i) as string;
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
 						} else {
-							// Simple mode
-							const columns = this.getNodeParameter('columns', i, {}) as any;
-							if (columns.columnValues) {
-								for (const col of columns.columnValues) {
-									columnValues[col.columnId] = col.columnValue;
-								}
-							}
+							// Simple mode - build column values from dynamic UI fields
+							columnValues = buildColumnValuesFromSimpleMode(this, i);
 						}
 
 						const item = await client.updateItemColumns(boardId, itemId, columnValues);
