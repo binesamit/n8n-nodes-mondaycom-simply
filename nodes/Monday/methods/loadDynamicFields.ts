@@ -233,3 +233,87 @@ export async function loadLinkedBoardItemsForDynamicColumn(
 		value: item.id,
 	}));
 }
+
+/**
+ * Load options for single-select columns (Status)
+ */
+export async function loadColumnOptionsForSelected(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getNodeParameter('board') as string;
+	const columnIdCombined = this.getCurrentNodeParameter('columnId') as string;
+	const columnId = extractColumnId(columnIdCombined);
+	const columnType = columnIdCombined.split('|||')[0];
+
+	if (!boardId || !columnId) {
+		return [];
+	}
+
+	// Only for status columns
+	if (columnType === 'status') {
+		return loadStatusValuesForDynamicColumn.call(this);
+	}
+
+	return [];
+}
+
+/**
+ * Load options for multi-select columns (Dropdown, People, Board Relation)
+ */
+export async function loadColumnMultiOptionsForSelected(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getNodeParameter('board') as string;
+	const columnIdCombined = this.getCurrentNodeParameter('columnId') as string;
+	const columnId = extractColumnId(columnIdCombined);
+	const columnType = columnIdCombined.split('|||')[0];
+
+	if (!boardId || !columnId) {
+		return [];
+	}
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	// Handle based on column type
+	switch (columnType) {
+		case 'dropdown':
+			return loadDropdownValuesForDynamicColumn.call(this);
+
+		case 'people':
+			// Load users and guests
+			const users = await client.getUsers();
+			const options: INodePropertyOptions[] = [];
+			const regularUsers = users.filter((u: any) => !u.is_guest);
+			const guests = users.filter((u: any) => u.is_guest);
+
+			regularUsers.forEach((user: any) => {
+				options.push({
+					name: `👤 ${user.name} (${user.email})`,
+					value: user.id.toString(),
+				});
+			});
+
+			guests.forEach((user: any) => {
+				options.push({
+					name: `👥 ${user.name} - Guest (${user.email})`,
+					value: user.id.toString(),
+				});
+			});
+
+			return options;
+
+		case 'board_relation':
+			return loadLinkedBoardItemsForDynamicColumn.call(this);
+
+		default:
+			return [];
+	}
+}

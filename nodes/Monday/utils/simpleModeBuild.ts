@@ -9,7 +9,7 @@ function extractColumnId(combinedValue: string): string {
 }
 
 /**
- * Build column values from Simple Mode Airtable-style fields
+ * Build column values from Simple Mode unified fields
  */
 export function buildColumnValuesFromSimpleMode(
 	context: IExecuteFunctions,
@@ -32,81 +32,58 @@ export function buildColumnValuesFromSimpleMode(
 		const columnId = extractColumnId(columnIdCombined);
 		const columnType = columnIdCombined.split('|||')[0];
 
-		// Build value based on column type
-		switch (columnType) {
-			case 'status':
-				if (field.statusValue) {
-					columnValues[columnId] = { label: field.statusValue };
-				}
-				break;
+		// Build value based on which field the user filled
+		// Check each possible value field and use the appropriate one
 
-			case 'dropdown':
-				if (field.dropdownValues && field.dropdownValues.length > 0) {
-					columnValues[columnId] = { labels: field.dropdownValues };
-				}
-				break;
-
-			case 'people':
-				if (field.peopleValues && field.peopleValues.length > 0) {
+		// Single select (Status)
+		if (field.selectValue) {
+			columnValues[columnId] = { label: field.selectValue };
+		}
+		// Multi-select (Dropdown, People, Board Relation)
+		else if (field.multiSelectValues && field.multiSelectValues.length > 0) {
+			switch (columnType) {
+				case 'dropdown':
+					columnValues[columnId] = { labels: field.multiSelectValues };
+					break;
+				case 'people':
 					columnValues[columnId] = {
-						personsAndTeams: field.peopleValues.map((id: string) => ({
+						personsAndTeams: field.multiSelectValues.map((id: string) => ({
 							id,
 							kind: id.startsWith('team_') ? 'team' : 'person',
 						})),
 					};
-				}
-				break;
-
-			case 'board_relation':
-				if (field.boardRelationValues && field.boardRelationValues.length > 0) {
+					break;
+				case 'board_relation':
 					columnValues[columnId] = {
-						linkedPulseIds: field.boardRelationValues.map((id: string) => ({
+						linkedPulseIds: field.multiSelectValues.map((id: string) => ({
 							linkedPulseId: parseInt(id, 10),
 						})),
 					};
-				}
-				break;
-
-			case 'date':
-				if (field.dateValue) {
-					columnValues[columnId] = { date: field.dateValue };
-				}
-				break;
-
-			case 'timeline':
-				if (field.timelineStartDate && field.timelineEndDate) {
-					columnValues[columnId] = {
-						from: field.timelineStartDate,
-						to: field.timelineEndDate,
-					};
-				}
-				break;
-
-			case 'numbers':
-				if (field.numberValue !== undefined) {
-					columnValues[columnId] = field.numberValue;
-				}
-				break;
-
-			case 'text':
-			case 'long_text':
-			case 'email':
-			case 'phone':
-			case 'link':
-				if (field.textValue !== undefined) {
-					columnValues[columnId] = field.textValue;
-				}
-				break;
-
-			case 'checkbox':
-				columnValues[columnId] = { checked: field.checkboxValue ? 'true' : 'false' };
-				break;
-
-			case 'rating':
-				if (field.ratingValue !== undefined) {
-					columnValues[columnId] = field.ratingValue;
-				}
-				break;
+					break;
+			}
+		}
+		// Text value
+		else if (field.textValue !== undefined && field.textValue !== '') {
+			columnValues[columnId] = field.textValue;
+		}
+		// Number value
+		else if (field.numberValue !== undefined && field.numberValue !== 0) {
+			columnValues[columnId] = field.numberValue;
+		}
+		// Date value
+		else if (field.dateValue) {
+			columnValues[columnId] = { date: field.dateValue };
+		}
+		// Timeline
+		else if (field.timelineStart && field.timelineEnd) {
+			columnValues[columnId] = {
+				from: field.timelineStart,
+				to: field.timelineEnd,
+			};
+		}
+		// Checkbox
+		else if (field.checkboxValue !== undefined) {
+			columnValues[columnId] = { checked: field.checkboxValue ? 'true' : 'false' };
 		}
 	}
 

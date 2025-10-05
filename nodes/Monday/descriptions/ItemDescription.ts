@@ -1,5 +1,5 @@
 import { INodeProperties } from 'n8n-workflow';
-import { airtableStyleColumnFields } from './AirtableStyleFields';
+import { unifiedColumnFields } from './UnifiedColumnFields';
 import { fileUploadNotice } from './ColumnFields';
 
 export const itemOperations: INodeProperties[] = [
@@ -150,8 +150,8 @@ export const itemFields: INodeProperties[] = [
 		placeholder: '{"status": {"label": "Done"}, "text": "Hello"}',
 	},
 
-	// Simple mode - Airtable-style dynamic fields
-	airtableStyleColumnFields,
+	// Simple mode - Unified column fields (shows all field types)
+	unifiedColumnFields,
 	fileUploadNotice,
 
 	// Get All - Limit

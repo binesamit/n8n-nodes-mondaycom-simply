@@ -85,6 +85,9 @@ export class Monday implements INodeType {
 			loadDropdownValuesForDynamicColumn: loadDynamicFields.loadDropdownValuesForDynamicColumn,
 			loadLinkedBoardItemsForDynamicColumn:
 				loadDynamicFields.loadLinkedBoardItemsForDynamicColumn,
+			// Unified field loaders
+			loadColumnOptionsForSelected: loadDynamicFields.loadColumnOptionsForSelected,
+			loadColumnMultiOptionsForSelected: loadDynamicFields.loadColumnMultiOptionsForSelected,
 		},
 		resourceMapping: {
 			getMondayBoardFields: resourceMapping.getMondayBoardFields,
