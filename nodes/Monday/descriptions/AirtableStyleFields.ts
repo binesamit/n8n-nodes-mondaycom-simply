@@ -28,10 +28,10 @@ export const airtableStyleColumnFields: INodeProperties = {
 				{
 					displayName: 'Column',
 					name: 'columnId',
-					type: 'string',
+					type: 'options',
 					default: '',
 					required: true,
-					description: 'The column ID to update',
+					description: 'Select the column to update',
 					typeOptions: {
 						loadOptionsMethod: 'loadBoardColumnsAsCollectionOptions',
 						loadOptionsDependsOn: ['board'],
