@@ -246,7 +246,12 @@ export async function loadLinkedBoardItemsExtended(
 	const boardId = this.getCurrentNodeParameter('board') as string;
 	const columnId = this.getCurrentNodeParameter('boardRelationColumn') as string;
 
-	if (!boardId || !columnId) return [];
+	console.log('loadLinkedBoardItemsExtended - boardId:', boardId, 'columnId:', columnId);
+
+	if (!boardId || !columnId) {
+		console.log('loadLinkedBoardItemsExtended - Missing parameters, returning empty');
+		return [];
+	}
 
 	const credentials = await this.getCredentials('mondayApi');
 	const apiVersion = (credentials.apiVersion as string) || '2023-10';
@@ -262,7 +267,10 @@ export async function loadLinkedBoardItemsExtended(
 	const board = await client.getBoard(boardId);
 	const column = board.columns.find((col) => col.id === columnId);
 
+	console.log('loadLinkedBoardItemsExtended - column found:', column?.title, 'type:', column?.type);
+
 	if (!column || column.type !== 'board_relation') {
+		console.log('loadLinkedBoardItemsExtended - Column not found or not board_relation type');
 		return [];
 	}
 
@@ -270,12 +278,17 @@ export async function loadLinkedBoardItemsExtended(
 	const settings = JSON.parse(column.settings_str);
 	const linkedBoardIds = settings.board_ids || [];
 
+	console.log('loadLinkedBoardItemsExtended - linkedBoardIds:', linkedBoardIds);
+
 	if (linkedBoardIds.length === 0) {
+		console.log('loadLinkedBoardItemsExtended - No linked boards found in settings');
 		return [];
 	}
 
 	// Fetch items from linked boards
 	const items = await client.getItemsFromBoards(linkedBoardIds);
+
+	console.log('loadLinkedBoardItemsExtended - Found', items.length, 'items');
 
 	return items.map((item) => ({
 		name: `${item.name} (#${item.id})`,
