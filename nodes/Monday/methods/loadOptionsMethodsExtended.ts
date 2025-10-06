@@ -276,7 +276,10 @@ export async function loadLinkedBoardItemsExtended(
 
 	// Parse linked board IDs from settings
 	const settings = JSON.parse(column.settings_str);
-	const linkedBoardIds = settings.board_ids || [];
+	console.log('loadLinkedBoardItemsExtended - full settings:', JSON.stringify(settings));
+
+	// Try different possible field names for linked boards
+	const linkedBoardIds = settings.board_ids || settings.boardIds || settings.linkedBoardIds || [];
 
 	console.log('loadLinkedBoardItemsExtended - linkedBoardIds:', linkedBoardIds);
 
