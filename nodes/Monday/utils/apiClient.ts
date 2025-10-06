@@ -723,13 +723,14 @@ export class MondayApiClient {
 	private convertBlocksToMarkdown(blocks: any[], textDirection: string = 'ltr'): string {
 		const lines: string[] = [];
 		const isRTL = textDirection === 'rtl';
-		// RLM (Right-to-Left Mark) character for RTL text
-		const RLM = isRTL ? '\u200F' : '';
+		// RLE (Right-to-Left Embedding) to start RTL block, PDF (Pop Directional Formatting) to end it
+		const RLE = '\u202B';  // Right-to-Left Embedding
+		const PDF = '\u202C';  // Pop Directional Formatting
 
 		for (const block of blocks) {
 			const content = block.content || '';
-			// Add RLM at the beginning of RTL content
-			const rtlContent = isRTL ? RLM + content : content;
+			// Wrap RTL content with RLE...PDF
+			const rtlContent = isRTL ? RLE + content + PDF : content;
 
 			switch (block.type) {
 				case 'large_title':
@@ -748,7 +749,7 @@ export class MondayApiClient {
 					// Split by newlines and add bullet points
 					content.split('\n').forEach((line: string) => {
 						if (line.trim()) {
-							const rtlLine = isRTL ? RLM + line.trim() : line.trim();
+							const rtlLine = isRTL ? RLE + line.trim() + PDF : line.trim();
 							lines.push(`- ${rtlLine}`);
 						}
 					});
@@ -757,7 +758,7 @@ export class MondayApiClient {
 					// Split by newlines and add numbers
 					content.split('\n').forEach((line: string, idx: number) => {
 						if (line.trim()) {
-							const rtlLine = isRTL ? RLM + line.trim() : line.trim();
+							const rtlLine = isRTL ? RLE + line.trim() + PDF : line.trim();
 							lines.push(`${idx + 1}. ${rtlLine}`);
 						}
 					});
@@ -766,7 +767,7 @@ export class MondayApiClient {
 					// Split by newlines and add checkboxes
 					content.split('\n').forEach((line: string) => {
 						if (line.trim()) {
-							const rtlLine = isRTL ? RLM + line.trim() : line.trim();
+							const rtlLine = isRTL ? RLE + line.trim() + PDF : line.trim();
 							lines.push(`- [ ] ${rtlLine}`);
 						}
 					});
@@ -837,12 +838,12 @@ export class MondayApiClient {
 	 */
 	async deleteDoc(docId: string): Promise<boolean> {
 		const query = `
-			mutation DeleteDoc($docId: Int!) {
+			mutation DeleteDoc($docId: ID!) {
 				delete_doc(docId: $docId)
 			}
 		`;
 
-		const response = await this.executeQuery(query, { docId: parseInt(docId) });
+		const response = await this.executeQuery(query, { docId });
 		return !!response.data.delete_doc;
 	}
 
