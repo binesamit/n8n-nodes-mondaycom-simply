@@ -576,14 +576,23 @@ export class MondayApiClient {
 	/**
 	 * Create a folder in workspace
 	 */
-	async createFolder(workspaceId: string, folderName: string, color?: string): Promise<any> {
+	async createFolder(
+		workspaceId: string,
+		folderName: string,
+		color?: string,
+		parentFolderId?: string,
+	): Promise<any> {
 		const query = `
-			mutation CreateFolder($workspaceId: ID!, $folderName: String!, $color: FolderColor) {
-				create_folder(workspace_id: $workspaceId, name: $folderName, color: $color) {
+			mutation CreateFolder($workspaceId: ID!, $folderName: String!, $color: FolderColor, $parentFolderId: ID) {
+				create_folder(workspace_id: $workspaceId, name: $folderName, color: $color, parent_folder_id: $parentFolderId) {
 					id
 					name
 					color
 					workspace {
+						id
+						name
+					}
+					parent {
 						id
 						name
 					}
@@ -595,6 +604,7 @@ export class MondayApiClient {
 			workspaceId,
 			folderName,
 			color: color === 'null' ? null : color,
+			parentFolderId,
 		});
 		return response.data.create_folder;
 	}
@@ -646,29 +656,28 @@ export class MondayApiClient {
 		location: { workspaceId?: string; folderId?: string },
 		blocks?: any[],
 	): Promise<any> {
+		// Build location object
+		const locationInput: any = {};
+		if (location.workspaceId) {
+			locationInput.workspace = parseInt(location.workspaceId);
+		} else if (location.folderId) {
+			locationInput.folder = parseInt(location.folderId);
+		}
+
 		const query = `
-			mutation CreateDoc($docName: String!, $docKind: DocKind!, $workspaceId: ID, $folderId: ID, $blocks: [DocBlockInput!]) {
-				create_doc(
-					name: $docName,
-					kind: $docKind,
-					workspace_id: $workspaceId,
-					folder_id: $folderId,
-					blocks: $blocks
-				) {
+			mutation CreateDoc($location: CreateDocInput!) {
+				create_doc(location: $location) {
 					id
 					name
-					kind
 					url
+					object_id
+					workspace_id
 				}
 			}
 		`;
 
 		const response = await this.executeQuery(query, {
-			docName,
-			docKind,
-			workspaceId: location.workspaceId,
-			folderId: location.folderId,
-			blocks,
+			location: locationInput,
 		});
 		return response.data.create_doc;
 	}

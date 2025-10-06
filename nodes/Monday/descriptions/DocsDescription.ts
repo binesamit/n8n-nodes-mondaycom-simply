@@ -101,43 +101,6 @@ export const docsFields: INodeProperties[] = [
 		description: 'The folder ID where the doc will be created',
 		placeholder: '2015797',
 	},
-	{
-		displayName: 'Doc Name',
-		name: 'docName',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['docs'],
-				operation: ['create'],
-			},
-		},
-		default: '',
-		description: 'Name of the new doc',
-	},
-	{
-		displayName: 'Doc Kind',
-		name: 'docKind',
-		type: 'options',
-		displayOptions: {
-			show: {
-				resource: ['docs'],
-				operation: ['create'],
-			},
-		},
-		options: [
-			{
-				name: 'Public',
-				value: 'public',
-			},
-			{
-				name: 'Private',
-				value: 'private',
-			},
-		],
-		default: 'public',
-		description: 'The doc visibility',
-	},
 
 	// Get/Delete/Update Doc
 	{

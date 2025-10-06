@@ -50,14 +50,19 @@ export class MondayApi implements ICredentialType {
 					description: 'Latest stable release',
 				},
 				{
-					name: '2025-01 (Latest)',
+					name: '2025-01 (Stable)',
 					value: '2025-01',
-					description: 'Current latest version',
+					description: 'Enhanced docs and blocks support',
 				},
 				{
 					name: '2025-07 (Future)',
 					value: '2025-07',
 					description: 'Future version placeholder',
+				},
+				{
+					name: '2025-10 (Latest)',
+					value: '2025-10',
+					description: 'Current latest version with all features',
 				},
 			],
 		},

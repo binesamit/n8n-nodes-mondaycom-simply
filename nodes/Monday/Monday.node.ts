@@ -310,8 +310,14 @@ export class Monday implements INodeType {
 						const workspaceId = this.getNodeParameter('workspaceId', i) as string;
 						const folderName = this.getNodeParameter('folderName', i) as string;
 						const folderColor = this.getNodeParameter('folderColor', i, 'null') as string;
+						const parentFolderId = this.getNodeParameter('parentFolderId', i, '') as string;
 
-						const folder = await client.createFolder(workspaceId, folderName, folderColor);
+						const folder = await client.createFolder(
+							workspaceId,
+							folderName,
+							folderColor,
+							parentFolderId || undefined,
+						);
 						returnData.push({ json: folder });
 					} else if (operation === 'update') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
@@ -332,8 +338,6 @@ export class Monday implements INodeType {
 					}
 				} else if (resource === 'docs') {
 					if (operation === 'create') {
-						const docName = this.getNodeParameter('docName', i) as string;
-						const docKind = this.getNodeParameter('docKind', i) as string;
 						const location = this.getNodeParameter('location', i) as string;
 						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
 
@@ -366,7 +370,7 @@ export class Monday implements INodeType {
 							}
 						}
 
-						const doc = await client.createDoc(docName, docKind, locationData, blocks);
+						const doc = await client.createDoc('', '', locationData, blocks);
 						returnData.push({ json: doc });
 					} else if (operation === 'get') {
 						const docId = this.getNodeParameter('docId', i) as string;
