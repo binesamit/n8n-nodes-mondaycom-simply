@@ -689,10 +689,47 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Add blocks to a doc using markdown
+	 * Add blocks to a doc using create_doc_block for RTL support
 	 */
 	async addBlocksToDoc(docId: string, blocks: any[], textDirection: string = 'ltr'): Promise<any> {
-		// Convert blocks to markdown
+		const isRTL = textDirection === 'rtl';
+		const blockIds: string[] = [];
+
+		// If RTL, use create_doc_block with direction parameter
+		if (isRTL) {
+			for (const block of blocks) {
+				const content = block.content || '';
+				const blockType = this.mapBlockType(block.type);
+				const alignment = isRTL ? 'right' : 'left';
+
+				// Build deltaFormat content
+				const contentJson = JSON.stringify({
+					alignment,
+					direction: 'rtl',
+					deltaFormat: [{ insert: content }],
+				});
+
+				const query = `
+					mutation CreateDocBlock($docId: Int!, $type: DocBlockContentType!, $content: JSON!) {
+						create_doc_block(doc_id: $docId, type: $type, content: $content) {
+							id
+						}
+					}
+				`;
+
+				const response = await this.executeQuery(query, {
+					docId: parseInt(docId),
+					type: blockType,
+					content: contentJson,
+				});
+
+				blockIds.push(response.data.create_doc_block.id);
+			}
+
+			return { success: true, block_ids: blockIds };
+		}
+
+		// For LTR, use markdown (faster)
 		const markdown = this.convertBlocksToMarkdown(blocks, textDirection);
 
 		const query = `
@@ -718,17 +755,30 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Convert blocks array to markdown string with RTL support
+	 * Map block type to Monday.com DocBlockContentType
+	 */
+	private mapBlockType(type: string): string {
+		const typeMap: { [key: string]: string } = {
+			large_title: 'large_title',
+			medium_title: 'medium_title',
+			small_title: 'small_title',
+			normal_text: 'normal_text',
+			quote: 'quote',
+			bulleted_list: 'bulleted_list',
+			numbered_list: 'numbered_list',
+			check_list: 'check_list',
+			code: 'code',
+			divider: 'divider',
+		};
+
+		return typeMap[type] || 'normal_text';
+	}
+
+	/**
+	 * Convert blocks array to markdown string (LTR only)
 	 */
 	private convertBlocksToMarkdown(blocks: any[], textDirection: string = 'ltr'): string {
 		const lines: string[] = [];
-		const isRTL = textDirection === 'rtl';
-
-		// Add RTL wrapper if needed
-		if (isRTL) {
-			lines.push('<div dir="rtl" style="text-align: right">');
-			lines.push('');
-		}
 
 		for (const block of blocks) {
 			const content = block.content || '';
@@ -782,16 +832,11 @@ export class MondayApiClient {
 			lines.push('');
 		}
 
-		// Close RTL wrapper
-		if (isRTL) {
-			lines.push('</div>');
-		}
-
 		return lines.join('\n');
 	}
 
 	/**
-	 * Get a doc
+	 * Get a doc with blocks
 	 */
 	async getDoc(docId: string): Promise<any> {
 		const query = `
@@ -809,6 +854,18 @@ export class MondayApiClient {
 					created_by {
 						id
 						name
+					}
+					blocks {
+						id
+						type
+						content
+						created_at
+						created_by {
+							id
+							name
+						}
+						position
+						updated_at
 					}
 				}
 			}
@@ -833,7 +890,7 @@ export class MondayApiClient {
 		// If updating name
 		if (updates.name) {
 			const nameQuery = `
-				mutation UpdateDocName($docId: ID!, $name: String!) {
+				mutation UpdateDocName($docId: Int!, $name: String!) {
 					update_doc_name(docId: $docId, name: $name)
 				}
 			`;
@@ -853,14 +910,12 @@ export class MondayApiClient {
 	 */
 	async deleteDoc(docId: string): Promise<boolean> {
 		const query = `
-			mutation DeleteDoc($docId: ID!) {
-				delete_doc(doc_id: $docId) {
-					id
-				}
+			mutation DeleteDoc($docId: Int!) {
+				delete_doc(docId: $docId)
 			}
 		`;
 
-		const response = await this.executeQuery(query, { docId });
+		const response = await this.executeQuery(query, { docId: parseInt(docId) });
 		return !!response.data.delete_doc;
 	}
 
