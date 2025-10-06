@@ -259,7 +259,6 @@ export class MondayApiClient {
 							name
 							column_values(ids: $columnIds) {
 								id
-								title
 								type
 								text
 								value
