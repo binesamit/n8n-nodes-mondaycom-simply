@@ -10,8 +10,7 @@ import {
 
 import { MondayApiClient } from './utils/apiClient';
 import { ColumnMapper } from './utils/columnMapper';
-import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
-import { buildColumnValuesFromSmartMode } from './utils/smartModeBuild';
+import { buildColumnValuesFromColumnByColumn } from './utils/columnByColumnBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import { boardOperations, boardFields } from './descriptions/BoardDescription';
 import { groupOperations, groupFields } from './descriptions/GroupDescription';
@@ -126,151 +125,6 @@ export class Monday implements INodeType {
 			loadBoardsForSelection: loadOptionsExtended.loadBoardsForSelection,
 			loadItemsFromBoard: loadOptionsExtended.loadItemsFromBoard,
 		},
-		resourceMapping: {
-			async getBoardColumns(this: ILoadOptionsFunctions): Promise<any> {
-				const boardId = this.getNodeParameter('board', 0) as string;
-
-				if (!boardId) {
-					return { fields: [] };
-				}
-
-				const credentials = await this.getCredentials('mondayApi');
-				const apiVersion = (credentials.apiVersion as string) || '2023-10';
-				const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
-
-				const client = new MondayApiClient(
-					credentials.apiToken as string,
-					apiVersion,
-					autoUpgrade,
-				);
-
-				const board = await client.getBoard(boardId);
-
-				if (!board.columns || board.columns.length === 0) {
-					return { fields: [] };
-				}
-
-				// Map columns to resourceMapper fields
-				const mappedFields = (await Promise.all(
-					board.columns
-						.filter((column: any) => column.id && column.title)
-						.map(async (column: any) => {
-							const columnType = column.type;
-							let type = 'string';
-							let options: INodePropertyOptions[] | undefined = undefined;
-
-							// Map Monday.com column types to n8n field types
-							switch (columnType) {
-								case 'status':
-									type = 'options';
-									try {
-										const statusSettings = column.settings_str ? JSON.parse(column.settings_str) : {};
-										const labels = statusSettings.labels || {};
-										options = Object.entries(labels).map(([index, label]: [string, any]) => ({
-											name: label,
-											value: label,
-										}));
-									} catch (error) {
-										options = [];
-									}
-									break;
-
-								case 'dropdown':
-									type = 'options';
-									try {
-										const dropdownSettings = column.settings_str ? JSON.parse(column.settings_str) : {};
-										const labels = dropdownSettings.labels || [];
-										options = labels.map((label: any) => ({
-											name: label,
-											value: label,
-										}));
-									} catch (error) {
-										options = [];
-									}
-									break;
-
-								case 'people':
-								case 'multiple-person':
-									type = 'options';  // Single select for people
-									try {
-										const users = await client.getUsers();
-										options = users.map((user: any) => ({
-											name: user.name,
-											value: user.id.toString(),
-										}));
-									} catch (error) {
-										options = [];
-									}
-									break;
-
-								case 'date':
-									type = 'dateTime';
-									break;
-
-								case 'numbers':
-								case 'numeric':
-									type = 'number';
-									break;
-
-								case 'checkbox':
-								case 'boolean':
-									type = 'boolean';
-									break;
-
-								case 'board-relation':
-									type = 'string';
-									// Return field with detailed instructions for board relation
-									return {
-										id: column.id,
-										displayName: column.title,
-										required: false,
-										defaultMatch: false,
-										display: true,
-										type: 'string',
-										description: `Board Relation column - Enter item IDs as JSON array: [123, 456] (Column type: ${columnType})`,
-									};
-
-								case 'timeline':
-									type = 'string';
-									// Return field with detailed instructions for timeline
-									return {
-										id: column.id,
-										displayName: column.title,
-										required: false,
-										defaultMatch: false,
-										display: true,
-										type: 'string',
-										description: `Timeline column - Enter as JSON: {"from":"2024-01-01","to":"2024-12-31"} (Column type: ${columnType})`,
-									};
-
-								case 'text':
-								case 'long-text':
-								case 'email':
-								case 'phone':
-								case 'link':
-								default:
-									type = 'string';
-									break;
-							}
-
-							return {
-								id: column.id,
-								displayName: column.title,
-								required: false,
-								defaultMatch: false,
-								display: true,
-								type,
-								options,
-								description: `Column type: ${columnType}`,
-							};
-						}),
-				)).filter(field => field !== null);
-
-				return {
-					fields: mappedFields,
-				};
-			},
-		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -303,12 +157,9 @@ export class Monday implements INodeType {
 						if (columnInputMode === 'advanced') {
 							const jsonInput = this.getNodeParameter('columnValuesJson', i) as string;
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
-						} else if (columnInputMode === 'smart') {
-							// Smart mode - build from resourceMapper
-							columnValues = buildColumnValuesFromSmartMode(this, i, boardId);
 						} else {
-							// Simple mode - build column values from dynamic UI fields
-							columnValues = buildColumnValuesFromSimpleMode(this, i);
+							// Column by Column mode - build from fixedCollection
+							columnValues = buildColumnValuesFromColumnByColumn(this, i);
 						}
 
 						// Check if creating as sub-item
@@ -333,12 +184,9 @@ export class Monday implements INodeType {
 						if (columnInputMode === 'advanced') {
 							const jsonInput = this.getNodeParameter('columnValuesJson', i) as string;
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
-						} else if (columnInputMode === 'smart') {
-							// Smart mode - build from resourceMapper
-							columnValues = buildColumnValuesFromSmartMode(this, i, boardId);
 						} else {
-							// Simple mode - build column values from dynamic UI fields
-							columnValues = buildColumnValuesFromSimpleMode(this, i);
+							// Column by Column mode - build from fixedCollection
+							columnValues = buildColumnValuesFromColumnByColumn(this, i);
 						}
 
 						const item = await client.updateItemColumns(boardId, itemId, columnValues);

@@ -15,7 +15,7 @@ export const columnFields: INodeProperties = {
 		show: {
 			resource: ['item'],
 			operation: ['create', 'update'],
-			columnInputMode: ['simple'],
+			columnInputMode: ['columnByColumn'],
 		},
 	},
 	default: {},
@@ -290,7 +290,7 @@ export const fileUploadNotice: INodeProperties = {
 		show: {
 			resource: ['item'],
 			operation: ['create', 'update'],
-			columnInputMode: ['simple'],
+			columnInputMode: ['columnByColumn'],
 		},
 	},
 	default: '',
