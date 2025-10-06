@@ -119,7 +119,7 @@ export const itemFields: INodeProperties[] = [
 				resource: ['item'],
 			},
 			hide: {
-				operation: ['getByColumnValue'],
+				operation: ['getByColumnValue', 'createSimple'],
 			},
 		},
 		default: '',

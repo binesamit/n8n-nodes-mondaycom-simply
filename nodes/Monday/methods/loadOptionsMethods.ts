@@ -205,7 +205,7 @@ export async function loadStatusValues(
  * Load columns from board (for createSimple)
  */
 export async function loadBoardColumns(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	const boardId = this.getCurrentNodeParameter('boardId') as string;
+	const boardId = this.getCurrentNodeParameter('board') as string;
 	if (!boardId) return [];
 
 	const credentials = await this.getCredentials('mondayApi');
