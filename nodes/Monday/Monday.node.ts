@@ -451,6 +451,8 @@ export class Monday implements INodeType {
 						const itemId = this.getNodeParameter('itemId', i) as string;
 						let updateText = this.getNodeParameter('updateText', i) as string;
 						const shouldParseUserMentions = this.getNodeParameter('parseUserMentions', i, true) as boolean;
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as any;
+						const parentUpdateId = additionalOptions.parentUpdateId || undefined;
 
 						let mentions: Array<{ id: number; type: string }> | undefined;
 
@@ -463,7 +465,7 @@ export class Monday implements INodeType {
 							mentions = result.mentions;
 						}
 
-						const update = await client.createUpdate(itemId, updateText, mentions);
+						const update = await client.createUpdate(itemId, updateText, mentions, parentUpdateId);
 						returnData.push({ json: update });
 					} else if (operation === 'createReply') {
 						const updateId = this.getNodeParameter('updateId', i) as string;

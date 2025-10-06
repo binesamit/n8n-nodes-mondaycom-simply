@@ -45,15 +45,23 @@ export async function parseUserMentions(
 		}
 	}
 
-	// Replace @userid with @username
+	// Replace @userid with @username - process all matches
 	let result = text;
-	for (const match of matches) {
+
+	// Sort matches by position (descending) to avoid index shifting
+	const sortedMatches = matches.sort((a, b) => b.index! - a.index!);
+
+	for (const match of sortedMatches) {
 		const userId = match[1];
 		const user = userCache.get(userId);
+		const matchIndex = match.index!;
+		const matchLength = match[0].length;
 
 		if (user) {
-			// Replace @12345678 with @Username
-			result = result.replace(`@${userId}`, `@${user.name}`);
+			// Replace @12345678 with @Username at the exact position
+			result = result.substring(0, matchIndex) +
+			         `@${user.name}` +
+			         result.substring(matchIndex + matchLength);
 		}
 	}
 

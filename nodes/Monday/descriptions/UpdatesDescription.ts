@@ -77,6 +77,29 @@ export const updatesFields: INodeProperties[] = [
 		placeholder: 'Hello @12345678, please review this item',
 	},
 	{
+		displayName: 'Additional Options',
+		name: 'additionalOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['updates'],
+				operation: ['create'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Parent Update ID',
+				name: 'parentUpdateId',
+				type: 'string',
+				default: '',
+				description: 'ID of parent update to create this as a reply (creates threaded conversation)',
+				placeholder: '987654321',
+			},
+		],
+	},
+	{
 		displayName: 'Parse User Mentions',
 		name: 'parseUserMentions',
 		type: 'boolean',

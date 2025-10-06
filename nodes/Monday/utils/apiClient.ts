@@ -697,7 +697,7 @@ export class MondayApiClient {
 
 		const query = `
 			mutation AddContentToDoc($docId: ID!, $markdown: String!) {
-				add_content_to_doc_from_markdown(doc_id: $docId, markdown: $markdown) {
+				add_content_to_doc_from_markdown(docId: $docId, markdown: $markdown) {
 					success
 					block_ids
 					error
@@ -985,6 +985,7 @@ export class MondayApiClient {
 		itemId: string,
 		updateText: string,
 		mentions?: Array<{ id: number; type: string }>,
+		parentUpdateId?: string,
 	): Promise<any> {
 		// Build mentions list inline since UpdateMentionInput doesn't exist
 		let mentionsList = '';
@@ -995,9 +996,15 @@ export class MondayApiClient {
 			mentionsList = `, mentions_list: [${mentionsStr}]`;
 		}
 
+		// Add parent_id if provided
+		let parentIdParam = '';
+		if (parentUpdateId) {
+			parentIdParam = `, parent_id: ${parentUpdateId}`;
+		}
+
 		const query = `
 			mutation CreateUpdate($itemId: ID!, $body: String!) {
-				create_update(item_id: $itemId, body: $body${mentionsList}) {
+				create_update(item_id: $itemId, body: $body${mentionsList}${parentIdParam}) {
 					id
 					body
 					created_at
