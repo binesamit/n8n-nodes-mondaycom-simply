@@ -129,11 +129,21 @@ export async function loadDropdownValues(
 	}
 
 	const settings = JSON.parse(column.settings_str);
-	const labels = settings.labels || [];
+	const labels = settings.labels || {};
 
+	// Monday dropdown settings structure: {1: "בדיקה 1", 2: "בדיקה 2"}
+	// We need to return the label text as the value, not the ID
+	if (typeof labels === 'object' && !Array.isArray(labels)) {
+		return Object.entries(labels).map(([id, name]) => ({
+			name: name as string,
+			value: name as string, // Monday expects the label text, not the ID
+		}));
+	}
+
+	// Fallback for array format
 	return labels.map((label: any) => ({
 		name: typeof label === 'string' ? label : label.name,
-		value: typeof label === 'string' ? label : label.id,
+		value: typeof label === 'string' ? label : label.name,
 	}));
 }
 
@@ -424,11 +434,21 @@ export async function loadDropdownValuesForSelectedColumn(
 	}
 
 	const settings = JSON.parse(column.settings_str);
-	const labels = settings.labels || [];
+	const labels = settings.labels || {};
 
+	// Monday dropdown settings structure: {1: "בדיקה 1", 2: "בדיקה 2"}
+	// We need to return the label text as the value, not the ID
+	if (typeof labels === 'object' && !Array.isArray(labels)) {
+		return Object.entries(labels).map(([id, name]) => ({
+			name: name as string,
+			value: name as string, // Monday expects the label text, not the ID
+		}));
+	}
+
+	// Fallback for array format
 	return labels.map((label: any) => ({
 		name: typeof label === 'string' ? label : label.name,
-		value: typeof label === 'string' ? label : label.id,
+		value: typeof label === 'string' ? label : label.name,
 	}));
 }
 
