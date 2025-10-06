@@ -333,17 +333,29 @@ export async function loadStatusValuesForSelectedColumn(
 ): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
 
-	// Try to get column from different possible paths
+	// In fixedCollection context, n8n provides the value being edited directly
+	// Try multiple approaches to get the column ID
 	let columnId: string | undefined;
+
+	// Method 1: Direct parameter access (when editing the field)
 	try {
-		// Try accessing within fixedCollection context
-		columnId = this.getCurrentNodeParameter('columnValues.statusColumn.column') as string;
+		columnId = this.getNodeParameter('column') as string;
 	} catch (error) {
-		// Fallback to simple path
+		// Method 2: Try with context path
 		try {
-			columnId = this.getCurrentNodeParameter('column') as string;
+			const params = this.getNodeParameter('columnValues') as any;
+			if (params?.statusColumn && Array.isArray(params.statusColumn)) {
+				// Get the last item being edited
+				const lastItem = params.statusColumn[params.statusColumn.length - 1];
+				columnId = lastItem?.column;
+			}
 		} catch (e) {
-			// Unable to get column
+			// Method 3: Try getCurrentNodeParameter
+			try {
+				columnId = this.getCurrentNodeParameter('column') as string;
+			} catch (err) {
+				// Unable to get column
+			}
 		}
 	}
 
@@ -388,17 +400,27 @@ export async function loadDropdownValuesForSelectedColumn(
 ): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
 
-	// Try to get column from different possible paths
+	// Try multiple approaches to get the column ID
 	let columnId: string | undefined;
+
+	// Method 1: Direct parameter access (when editing the field)
 	try {
-		// Try accessing within fixedCollection context
-		columnId = this.getCurrentNodeParameter('columnValues.dropdownColumn.column') as string;
+		columnId = this.getNodeParameter('column') as string;
 	} catch (error) {
-		// Fallback to simple path
+		// Method 2: Try with context path
 		try {
-			columnId = this.getCurrentNodeParameter('column') as string;
+			const params = this.getNodeParameter('columnValues') as any;
+			if (params?.dropdownColumn && Array.isArray(params.dropdownColumn)) {
+				const lastItem = params.dropdownColumn[params.dropdownColumn.length - 1];
+				columnId = lastItem?.column;
+			}
 		} catch (e) {
-			// Unable to get column
+			// Method 3: Try getCurrentNodeParameter
+			try {
+				columnId = this.getCurrentNodeParameter('column') as string;
+			} catch (err) {
+				// Unable to get column
+			}
 		}
 	}
 
@@ -448,17 +470,27 @@ export async function loadLinkedBoardItemsForSelectedColumn(
 ): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
 
-	// Try to get column from different possible paths
+	// Try multiple approaches to get the column ID
 	let columnId: string | undefined;
+
+	// Method 1: Direct parameter access (when editing the field)
 	try {
-		// Try accessing within fixedCollection context
-		columnId = this.getCurrentNodeParameter('columnValues.boardRelationColumn.column') as string;
+		columnId = this.getNodeParameter('column') as string;
 	} catch (error) {
-		// Fallback to simple path
+		// Method 2: Try with context path
 		try {
-			columnId = this.getCurrentNodeParameter('column') as string;
+			const params = this.getNodeParameter('columnValues') as any;
+			if (params?.boardRelationColumn && Array.isArray(params.boardRelationColumn)) {
+				const lastItem = params.boardRelationColumn[params.boardRelationColumn.length - 1];
+				columnId = lastItem?.column;
+			}
 		} catch (e) {
-			// Unable to get column
+			// Method 3: Try getCurrentNodeParameter
+			try {
+				columnId = this.getCurrentNodeParameter('column') as string;
+			} catch (err) {
+				// Unable to get column
+			}
 		}
 	}
 
