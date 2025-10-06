@@ -689,47 +689,10 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Add blocks to a doc using create_doc_block for RTL support
+	 * Add blocks to a doc using markdown
 	 */
 	async addBlocksToDoc(docId: string, blocks: any[], textDirection: string = 'ltr'): Promise<any> {
-		const isRTL = textDirection === 'rtl';
-		const blockIds: string[] = [];
-
-		// If RTL, use create_doc_block with direction parameter
-		if (isRTL) {
-			for (const block of blocks) {
-				const content = block.content || '';
-				const blockType = this.mapBlockType(block.type);
-				const alignment = isRTL ? 'right' : 'left';
-
-				// Build deltaFormat content (camelCase as required by Monday.com API)
-				const contentJson = JSON.stringify({
-					alignment,
-					direction: 'rtl',
-					deltaFormat: [{ insert: content }],
-				});
-
-				const query = `
-					mutation CreateDocBlock($docId: ID!, $type: DocBlockContentType!, $content: JSON!) {
-						create_doc_block(doc_id: $docId, type: $type, content: $content) {
-							id
-						}
-					}
-				`;
-
-				const response = await this.executeQuery(query, {
-					docId: docId,
-					type: blockType,
-					content: contentJson,
-				});
-
-				blockIds.push(response.data.create_doc_block.id);
-			}
-
-			return { success: true, block_ids: blockIds };
-		}
-
-		// For LTR, use markdown (faster)
+		// Convert blocks to markdown with RTL support
 		const markdown = this.convertBlocksToMarkdown(blocks, textDirection);
 
 		const query = `
@@ -755,63 +718,57 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Map block type to Monday.com DocBlockContentType
-	 */
-	private mapBlockType(type: string): string {
-		const typeMap: { [key: string]: string } = {
-			large_title: 'large_title',
-			medium_title: 'medium_title',
-			small_title: 'small_title',
-			normal_text: 'normal_text',
-			quote: 'quote',
-			bulleted_list: 'bulleted_list',
-			numbered_list: 'numbered_list',
-			check_list: 'check_list',
-			code: 'code',
-			divider: 'divider',
-		};
-
-		return typeMap[type] || 'normal_text';
-	}
-
-	/**
-	 * Convert blocks array to markdown string (LTR only)
+	 * Convert blocks array to markdown string with RTL support
 	 */
 	private convertBlocksToMarkdown(blocks: any[], textDirection: string = 'ltr'): string {
 		const lines: string[] = [];
+		const isRTL = textDirection === 'rtl';
+		// RLM (Right-to-Left Mark) character for RTL text
+		const RLM = isRTL ? '\u200F' : '';
 
 		for (const block of blocks) {
 			const content = block.content || '';
+			// Add RLM at the beginning of RTL content
+			const rtlContent = isRTL ? RLM + content : content;
 
 			switch (block.type) {
 				case 'large_title':
-					lines.push(`# ${content}`);
+					lines.push(`# ${rtlContent}`);
 					break;
 				case 'medium_title':
-					lines.push(`## ${content}`);
+					lines.push(`## ${rtlContent}`);
 					break;
 				case 'small_title':
-					lines.push(`### ${content}`);
+					lines.push(`### ${rtlContent}`);
 					break;
 				case 'quote':
-					lines.push(`> ${content}`);
+					lines.push(`> ${rtlContent}`);
 					break;
 				case 'bulleted_list':
 					// Split by newlines and add bullet points
 					content.split('\n').forEach((line: string) => {
-						if (line.trim()) lines.push(`- ${line.trim()}`);
+						if (line.trim()) {
+							const rtlLine = isRTL ? RLM + line.trim() : line.trim();
+							lines.push(`- ${rtlLine}`);
+						}
 					});
 					break;
 				case 'numbered_list':
 					// Split by newlines and add numbers
 					content.split('\n').forEach((line: string, idx: number) => {
-						if (line.trim()) lines.push(`${idx + 1}. ${line.trim()}`);
+						if (line.trim()) {
+							const rtlLine = isRTL ? RLM + line.trim() : line.trim();
+							lines.push(`${idx + 1}. ${rtlLine}`);
+						}
 					});
 					break;
 				case 'check_list':
 					// Split by newlines and add checkboxes
 					content.split('\n').forEach((line: string) => {
-						if (line.trim()) lines.push(`- [ ] ${line.trim()}`);
+						if (line.trim()) {
+							const rtlLine = isRTL ? RLM + line.trim() : line.trim();
+							lines.push(`- [ ] ${rtlLine}`);
+						}
 					});
 					break;
 				case 'code':
@@ -824,7 +781,7 @@ export class MondayApiClient {
 					break;
 				case 'normal_text':
 				default:
-					if (content) lines.push(content);
+					if (content) lines.push(rtlContent);
 					break;
 			}
 
