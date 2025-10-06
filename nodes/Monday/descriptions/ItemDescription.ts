@@ -191,8 +191,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -209,8 +211,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -229,8 +233,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -247,8 +253,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
@@ -267,8 +275,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -284,8 +294,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
@@ -304,8 +316,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -322,8 +336,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
@@ -342,8 +358,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -356,8 +374,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -370,8 +390,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -386,8 +408,10 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
-				operation: ['create', 'update'],
-				columnInputMode: ['simple'],
+			},
+			hide: {
+				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -694,48 +718,4 @@ export const itemFields: INodeProperties[] = [
 		placeholder: 'New Item',
 	},
 
-	// Column Values for createSimple - Dynamic fields
-	{
-		displayName: 'Column Values',
-		name: 'columnValuesUi',
-		type: 'fixedCollection',
-		typeOptions: {
-			multipleValues: true,
-		},
-		placeholder: 'Add Column Value',
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: {},
-		options: [
-			{
-				name: 'columnValue',
-				displayName: 'Column Value',
-				values: [
-					{
-						displayName: 'Column',
-						name: 'columnId',
-						type: 'options',
-						typeOptions: {
-							loadOptionsMethod: 'loadBoardColumns',
-							loadOptionsDependsOn: ['board'],
-						},
-						default: '',
-						description: 'The column to set',
-					},
-					{
-						displayName: 'Value',
-						name: 'value',
-						type: 'string',
-						default: '',
-						description: 'The value to set (format depends on column type)',
-						placeholder: 'Enter value based on column type',
-					},
-				],
-			},
-		],
-	},
 ];
