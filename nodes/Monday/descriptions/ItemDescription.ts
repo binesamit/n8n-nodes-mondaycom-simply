@@ -385,9 +385,9 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
+				operation: ['create', 'update'],
 			},
 			hide: {
-				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
 				columnInputMode: ['advanced'],
 			},
 		},
@@ -405,14 +405,14 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
+				operation: ['create', 'update'],
 			},
 			hide: {
-				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
 				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
-		description: 'Select items from the linked board',
+		description: 'Select items from the linked board (select a Board Relation Column first)',
 	},
 
 	// Timeline Column
@@ -427,9 +427,9 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
+				operation: ['create', 'update'],
 			},
 			hide: {
-				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
 				columnInputMode: ['advanced'],
 			},
 		},
@@ -443,14 +443,14 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
+				operation: ['create', 'update'],
 			},
 			hide: {
-				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
 				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
-		description: 'Start date for timeline',
+		description: 'Start date for timeline (select a Timeline Column first)',
 	},
 	{
 		displayName: 'Timeline End Date',
@@ -459,14 +459,14 @@ export const itemFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['item'],
+				operation: ['create', 'update'],
 			},
 			hide: {
-				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
 				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
-		description: 'End date for timeline',
+		description: 'End date for timeline (select a Timeline Column first)',
 	},
 
 	// File Column Notice
