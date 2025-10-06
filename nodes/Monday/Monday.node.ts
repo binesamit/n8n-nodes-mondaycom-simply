@@ -93,6 +93,7 @@ export class Monday implements INodeType {
 			loadTemplates: loadOptionsExtended.loadTemplates,
 			loadGroups: loadOptionsExtended.loadGroups,
 			loadBoardsForSelection: loadOptionsExtended.loadBoardsForSelection,
+			loadItemsFromBoard: loadOptionsExtended.loadItemsFromBoard,
 		},
 	};
 
@@ -214,8 +215,9 @@ export class Monday implements INodeType {
 					} else if (operation === 'addUpdate') {
 						const itemId = this.getNodeParameter('itemId', i) as string;
 						const updateBody = this.getNodeParameter('updateBody', i) as string;
+						const replyToId = this.getNodeParameter('replyToId', i, '') as string;
 
-						const update = await client.addUpdate(itemId, updateBody);
+						const update = await client.addUpdate(itemId, updateBody, replyToId || undefined);
 						returnData.push({ json: update });
 					} else if (operation === 'getByColumnValue') {
 						const boardId = this.getNodeParameter('board', i) as string;
@@ -269,9 +271,15 @@ export class Monday implements INodeType {
 					} else if (operation === 'getMany') {
 						const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 						const limit = this.getNodeParameter('limit', i, 50) as number;
-						const boardIdsStr = this.getNodeParameter('boardIds', i, '') as string;
+						const boardIdsParam = this.getNodeParameter('boardIds', i, []) as string[] | string;
 
-						const boardIds = boardIdsStr ? boardIdsStr.split(',').map((id) => id.trim()) : undefined;
+						// Handle both array (multiOptions) and string (legacy) formats
+						let boardIds: string[] | undefined;
+						if (Array.isArray(boardIdsParam)) {
+							boardIds = boardIdsParam.length > 0 ? boardIdsParam : undefined;
+						} else if (typeof boardIdsParam === 'string' && boardIdsParam) {
+							boardIds = boardIdsParam.split(',').map((id) => id.trim());
+						}
 
 						const boards = await client.getBoards(returnAll ? 100 : limit);
 

@@ -598,3 +598,30 @@ export async function loadBoardsForSelection(
 		value: board.id,
 	}));
 }
+
+/**
+ * Load items from selected board
+ */
+export async function loadItemsFromBoard(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const items = await client.getItemsFromBoards([parseInt(boardId)]);
+
+	return items.map((item) => ({
+		name: `${item.name} (#${item.id})`,
+		value: item.id,
+	}));
+}

@@ -354,18 +354,21 @@ export class MondayApiClient {
 	/**
 	 * Add update (comment) to an item
 	 */
-	async addUpdate(itemId: string, body: string): Promise<any> {
+	async addUpdate(itemId: string, body: string, parentId?: string): Promise<any> {
 		const query = `
-			mutation CreateUpdate($itemId: ID!, $body: String!) {
-				create_update(item_id: $itemId, body: $body) {
+			mutation CreateUpdate($itemId: ID!, $body: String!, $parentId: ID) {
+				create_update(item_id: $itemId, body: $body, parent_id: $parentId) {
 					id
 					body
 					created_at
+					replies {
+						id
+					}
 				}
 			}
 		`;
 
-		const response = await this.executeQuery(query, { itemId, body });
+		const response = await this.executeQuery(query, { itemId, body, parentId });
 		return response.data.create_update;
 	}
 
@@ -521,17 +524,16 @@ export class MondayApiClient {
 
 		const query = `
 			query GetTemplates {
-				boards(board_kind: template) {
+				boards(limit: 200, state: template) {
 					id
 					name
 					description
-					board_kind
 				}
 			}
 		`;
 
 		const response = await this.executeQuery(query);
-		const templates = response.data.boards;
+		const templates = response.data.boards || [];
 
 		CacheManager.set(cacheKey, templates, 10 * 60 * 1000); // 10 minutes TTL
 		return templates;

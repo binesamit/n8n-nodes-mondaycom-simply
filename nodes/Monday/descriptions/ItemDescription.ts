@@ -135,9 +135,13 @@ export const itemFields: INodeProperties[] = [
 
 	// Item ID (for update/get/delete)
 	{
-		displayName: 'Item ID',
+		displayName: 'Item',
 		name: 'itemId',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadItemsFromBoard',
+			loadOptionsDependsOn: ['board'],
+		},
 		required: true,
 		displayOptions: {
 			show: {
@@ -146,7 +150,7 @@ export const itemFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'ID of the item',
+		description: 'The item to get/update/delete',
 	},
 
 	// Advanced mode - JSON input
@@ -493,6 +497,20 @@ export const itemFields: INodeProperties[] = [
 		default: '',
 		description: 'The text of the update (supports HTML)',
 		placeholder: 'Task completed successfully!',
+	},
+	{
+		displayName: 'Reply to Update ID',
+		name: 'replyToId',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['addUpdate'],
+			},
+		},
+		default: '',
+		description: 'ID of the update to reply to (optional - leave empty to create a new update)',
+		placeholder: '123456789',
 	},
 
 	// Get by Column Value fields
