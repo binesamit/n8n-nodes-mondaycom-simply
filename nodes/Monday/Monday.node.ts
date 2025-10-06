@@ -11,6 +11,7 @@ import {
 import { MondayApiClient } from './utils/apiClient';
 import { ColumnMapper } from './utils/columnMapper';
 import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
+import { buildColumnValuesFromSmartMode } from './utils/smartModeBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import { boardOperations, boardFields } from './descriptions/BoardDescription';
 import { groupOperations, groupFields } from './descriptions/GroupDescription';
@@ -217,7 +218,7 @@ export class Monday implements INodeType {
 									break;
 
 								case 'board-relation':
-									type = 'options';  // Single select for board relation
+									type = 'multiOptions';  // Multi select for board relation
 									try {
 										const relationSettings = column.settings_str ? JSON.parse(column.settings_str) : {};
 										const linkedBoardId = relationSettings.boardIds?.[0];
@@ -234,8 +235,30 @@ export class Monday implements INodeType {
 									break;
 
 								case 'timeline':
-									type = 'string';
-									break;
+									// Timeline requires custom handling - return a collection type
+									return {
+										id: column.id,
+										displayName: column.title,
+										required: false,
+										defaultMatch: false,
+										display: true,
+										type: 'collection',
+										options: [
+											{
+												displayName: 'Start Date',
+												name: 'from',
+												type: 'dateTime',
+												default: '',
+											},
+											{
+												displayName: 'End Date',
+												name: 'to',
+												type: 'dateTime',
+												default: '',
+											},
+										],
+										description: `Column type: ${columnType}`,
+									};
 
 								case 'text':
 								case 'long-text':
@@ -299,12 +322,7 @@ export class Monday implements INodeType {
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
 						} else if (columnInputMode === 'smart') {
 							// Smart mode - build from resourceMapper
-							const columnsData = this.getNodeParameter('columnsUi', i) as any;
-							if (columnsData.mappingMode === 'autoMapInputData') {
-								columnValues = items[i].json;
-							} else if (columnsData.mappingMode === 'defineBelow' && columnsData.value) {
-								columnValues = columnsData.value;
-							}
+							columnValues = buildColumnValuesFromSmartMode(this, i, boardId);
 						} else {
 							// Simple mode - build column values from dynamic UI fields
 							columnValues = buildColumnValuesFromSimpleMode(this, i);
@@ -324,12 +342,7 @@ export class Monday implements INodeType {
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
 						} else if (columnInputMode === 'smart') {
 							// Smart mode - build from resourceMapper
-							const columnsData = this.getNodeParameter('columnsUi', i) as any;
-							if (columnsData.mappingMode === 'autoMapInputData') {
-								columnValues = items[i].json;
-							} else if (columnsData.mappingMode === 'defineBelow' && columnsData.value) {
-								columnValues = columnsData.value;
-							}
+							columnValues = buildColumnValuesFromSmartMode(this, i, boardId);
 						} else {
 							// Simple mode - build column values from dynamic UI fields
 							columnValues = buildColumnValuesFromSimpleMode(this, i);
