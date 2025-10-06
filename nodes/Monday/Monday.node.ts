@@ -400,39 +400,6 @@ export class Monday implements INodeType {
 
 						const doc = await client.getDoc(docId);
 						returnData.push({ json: doc });
-					} else if (operation === 'update') {
-						const docId = this.getNodeParameter('docId', i) as string;
-						const updateFields = this.getNodeParameter('updateFields', i, {}) as any;
-						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
-
-						const updates: { name?: string; blocks?: any[] } = {};
-						if (updateFields.docName) {
-							updates.name = updateFields.docName;
-						}
-
-						if (addBlocks) {
-							const blocksData = this.getNodeParameter('blocks', i, {}) as any;
-							if (blocksData.blockItems && Array.isArray(blocksData.blockItems)) {
-								updates.blocks = blocksData.blockItems.map((block: any) => {
-									const blockData: any = { type: block.type };
-
-									if (block.deltaFormat) {
-										try {
-											blockData.delta_format = JSON.parse(block.deltaFormat);
-										} catch (e) {
-											blockData.content = block.content || '';
-										}
-									} else if (block.content) {
-										blockData.content = block.content;
-									}
-
-									return blockData;
-								});
-							}
-						}
-
-						const doc = await client.updateDoc(docId, updates);
-						returnData.push({ json: doc });
 					} else if (operation === 'delete') {
 						const docId = this.getNodeParameter('docId', i) as string;
 

@@ -710,7 +710,7 @@ export class MondayApiClient {
 				});
 
 				const query = `
-					mutation CreateDocBlock($docId: Int!, $type: DocBlockContentType!, $content: JSON!) {
+					mutation CreateDocBlock($docId: ID!, $type: DocBlockContentType!, $content: JSON!) {
 						create_doc_block(doc_id: $docId, type: $type, content: $content) {
 							id
 						}
@@ -718,7 +718,7 @@ export class MondayApiClient {
 				`;
 
 				const response = await this.executeQuery(query, {
-					docId: parseInt(docId),
+					docId: docId,
 					type: blockType,
 					content: contentJson,
 				});
@@ -873,36 +873,6 @@ export class MondayApiClient {
 
 		const response = await this.executeQuery(query, { docId });
 		return response.data.docs[0];
-	}
-
-	/**
-	 * Update a doc
-	 */
-	async updateDoc(docId: string, updates: { name?: string; blocks?: any[] }): Promise<any> {
-		let result: any = { id: docId };
-
-		// If updating blocks - add them using markdown
-		if (updates.blocks && updates.blocks.length > 0) {
-			await this.addBlocksToDoc(docId, updates.blocks);
-			result.blocksAdded = true;
-		}
-
-		// If updating name
-		if (updates.name) {
-			const nameQuery = `
-				mutation UpdateDocName($docId: Int!, $name: String!) {
-					update_doc_name(docId: $docId, name: $name)
-				}
-			`;
-			const response = await this.executeQuery(nameQuery, {
-				docId: parseInt(docId),
-				name: updates.name,
-			});
-			result.name = updates.name;
-			result.nameUpdated = true;
-		}
-
-		return result;
 	}
 
 	/**

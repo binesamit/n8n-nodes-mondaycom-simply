@@ -30,12 +30,6 @@ export const docsOperations: INodeProperties[] = [
 				description: 'Get a doc',
 				action: 'Get a doc',
 			},
-			{
-				name: 'Update',
-				value: 'update',
-				description: 'Update a doc',
-				action: 'Update a doc',
-			},
 		],
 		default: 'create',
 	},
@@ -152,7 +146,7 @@ export const docsFields: INodeProperties[] = [
 		placeholder: '2015797',
 	},
 
-	// Get/Delete/Update Doc
+	// Get/Delete Doc
 	{
 		displayName: 'Doc ID',
 		name: 'docId',
@@ -161,36 +155,12 @@ export const docsFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['docs'],
-				operation: ['get', 'delete', 'update'],
+				operation: ['get', 'delete'],
 			},
 		},
 		default: '',
 		description: 'ID of the doc',
 		placeholder: '123456789',
-	},
-
-	// Update Doc
-	{
-		displayName: 'Update Fields',
-		name: 'updateFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['docs'],
-				operation: ['update'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Doc Name',
-				name: 'docName',
-				type: 'string',
-				default: '',
-				description: 'New name for the doc',
-			},
-		],
 	},
 
 	// Blocks (API 2025-01+)
@@ -201,7 +171,7 @@ export const docsFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['docs'],
-				operation: ['create', 'update'],
+				operation: ['create'],
 			},
 		},
 		default: false,
@@ -217,7 +187,7 @@ export const docsFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['docs'],
-				operation: ['create', 'update'],
+				operation: ['create'],
 				addBlocks: [true],
 			},
 		},
