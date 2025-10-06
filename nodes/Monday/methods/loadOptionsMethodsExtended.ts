@@ -278,8 +278,8 @@ export async function loadLinkedBoardItemsExtended(
 	const settings = JSON.parse(column.settings_str);
 	console.log('loadLinkedBoardItemsExtended - full settings:', JSON.stringify(settings));
 
-	// Try different possible field names for linked boards
-	const linkedBoardIds = settings.board_ids || settings.boardIds || settings.linkedBoardIds || [];
+	// Monday.com uses 'boardIds' (camelCase) not 'board_ids'
+	const linkedBoardIds = settings.boardIds || settings.board_ids || [];
 
 	console.log('loadLinkedBoardItemsExtended - linkedBoardIds:', linkedBoardIds);
 

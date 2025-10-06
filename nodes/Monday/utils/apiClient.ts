@@ -123,16 +123,18 @@ export class MondayApiClient {
 		const query = `
 			query GetItems($boardIds: [ID!]) {
 				boards(ids: $boardIds) {
-					items {
-						id
-						name
+					items_page(limit: 500) {
+						items {
+							id
+							name
+						}
 					}
 				}
 			}
 		`;
 
 		const response = await this.executeQuery(query, { boardIds });
-		const items = response.data.boards.flatMap((board: any) => board.items);
+		const items = response.data.boards.flatMap((board: any) => board.items_page.items);
 
 		CacheManager.set(cacheKey, items, 2 * 60 * 1000); // 2 minutes TTL
 		return items;
