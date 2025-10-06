@@ -352,6 +352,134 @@ export class MondayApiClient {
 	}
 
 	/**
+	 * Add update (comment) to an item
+	 */
+	async addUpdate(itemId: string, body: string): Promise<any> {
+		const query = `
+			mutation CreateUpdate($itemId: ID!, $body: String!) {
+				create_update(item_id: $itemId, body: $body) {
+					id
+					body
+					created_at
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { itemId, body });
+		return response.data.create_update;
+	}
+
+	/**
+	 * Get items by column value
+	 */
+	async getItemsByColumnValue(
+		boardId: string,
+		columnId: string,
+		columnValue: string,
+		limit: number = 50,
+	): Promise<Item[]> {
+		const query = `
+			query GetItemsByColumnValue($boardId: ID!, $columnId: String!, $columnValue: String!, $limit: Int) {
+				items_page_by_column_values(
+					board_id: $boardId,
+					columns: [{column_id: $columnId, column_values: [$columnValue]}],
+					limit: $limit
+				) {
+					items {
+						id
+						name
+						column_values {
+							id
+							type
+							text
+							value
+						}
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			boardId,
+			columnId,
+			columnValue,
+			limit,
+		});
+
+		return response.data.items_page_by_column_values?.items || [];
+	}
+
+	/**
+	 * Move item to a different group
+	 */
+	async moveItemToGroup(itemId: string, groupId: string): Promise<Item> {
+		const query = `
+			mutation MoveItemToGroup($itemId: ID!, $groupId: String!) {
+				move_item_to_group(item_id: $itemId, group_id: $groupId) {
+					id
+					name
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { itemId, groupId });
+		return response.data.move_item_to_group;
+	}
+
+	/**
+	 * Create a new board
+	 */
+	async createBoard(
+		boardName: string,
+		boardKind: string,
+		workspaceId?: string,
+		templateId?: string,
+	): Promise<any> {
+		const query = `
+			mutation CreateBoard($boardName: String!, $boardKind: BoardKind!, $workspaceId: ID, $templateId: ID) {
+				create_board(
+					board_name: $boardName,
+					board_kind: $boardKind,
+					workspace_id: $workspaceId,
+					template_id: $templateId
+				) {
+					id
+					name
+					board_kind
+					state
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			boardName,
+			boardKind,
+			workspaceId,
+			templateId,
+		});
+
+		return response.data.create_board;
+	}
+
+	/**
+	 * Create a new group in a board
+	 */
+	async createGroup(boardId: string, groupName: string): Promise<any> {
+		const query = `
+			mutation CreateGroup($boardId: ID!, $groupName: String!) {
+				create_group(board_id: $boardId, group_name: $groupName) {
+					id
+					title
+					color
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { boardId, groupName });
+		return response.data.create_group;
+	}
+
+	/**
 	 * Clear cache for a specific board
 	 */
 	clearBoardCache(boardId: string): void {

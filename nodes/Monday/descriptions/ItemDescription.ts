@@ -13,16 +13,22 @@ export const itemOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Add Update',
+				value: 'addUpdate',
+				description: 'Add an update (comment) to an item',
+				action: 'Add update to an item',
+			},
+			{
 				name: 'Create',
 				value: 'create',
 				description: 'Create a new item',
 				action: 'Create an item',
 			},
 			{
-				name: 'Update',
-				value: 'update',
-				description: 'Update an existing item',
-				action: 'Update an item',
+				name: 'Delete',
+				value: 'delete',
+				description: 'Delete an item',
+				action: 'Delete an item',
 			},
 			{
 				name: 'Get',
@@ -37,16 +43,28 @@ export const itemOperations: INodeProperties[] = [
 				action: 'Get all items',
 			},
 			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete an item',
-				action: 'Delete an item',
+				name: 'Get by Column Value',
+				value: 'getByColumnValue',
+				description: 'Search items by column value',
+				action: 'Get items by column value',
+			},
+			{
+				name: 'Move to Group',
+				value: 'moveToGroup',
+				description: 'Move an item to a different group',
+				action: 'Move item to group',
 			},
 			{
 				name: 'Read Formula Columns',
 				value: 'readFormula',
 				description: 'Read calculated values from formula columns (requires API 2024-01+)',
 				action: 'Read formula columns',
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				description: 'Update an existing item',
+				action: 'Update an item',
 			},
 		],
 		default: 'create',
@@ -441,5 +459,135 @@ export const itemFields: INodeProperties[] = [
 		default: '',
 		placeholder: '123456 or 123456,789012',
 		description: 'Comma-separated list of item IDs. Leave empty for all items.',
+	},
+
+	// Add Update fields
+	{
+		displayName: 'Item ID',
+		name: 'itemId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['addUpdate'],
+			},
+		},
+		default: '',
+		description: 'The ID of the item to add update to',
+	},
+	{
+		displayName: 'Update Text',
+		name: 'updateBody',
+		type: 'string',
+		typeOptions: {
+			rows: 4,
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['addUpdate'],
+			},
+		},
+		default: '',
+		description: 'The text of the update (supports HTML)',
+		placeholder: 'Task completed successfully!',
+	},
+
+	// Get by Column Value fields
+	{
+		displayName: 'Board',
+		name: 'board',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadBoards',
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['getByColumnValue'],
+			},
+		},
+		default: '',
+		description: 'The board to search in',
+	},
+	{
+		displayName: 'Column',
+		name: 'columnId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadColumns',
+			loadOptionsDependsOn: ['board'],
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['getByColumnValue'],
+			},
+		},
+		default: '',
+		description: 'The column to search by',
+	},
+	{
+		displayName: 'Column Value',
+		name: 'columnValue',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['getByColumnValue'],
+			},
+		},
+		default: '',
+		description: 'The value to search for',
+		placeholder: 'Done',
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['getByColumnValue'],
+			},
+		},
+		default: 50,
+		description: 'Max number of results to return',
+	},
+
+	// Move to Group fields
+	{
+		displayName: 'Item ID',
+		name: 'itemId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['moveToGroup'],
+			},
+		},
+		default: '',
+		description: 'The ID of the item to move',
+	},
+	{
+		displayName: 'Group ID',
+		name: 'groupId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['moveToGroup'],
+			},
+		},
+		default: '',
+		description: 'The ID of the destination group',
+		placeholder: 'topics',
 	},
 ];

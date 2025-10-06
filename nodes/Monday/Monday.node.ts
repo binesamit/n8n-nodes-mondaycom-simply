@@ -12,6 +12,8 @@ import { MondayApiClient } from './utils/apiClient';
 import { ColumnMapper } from './utils/columnMapper';
 import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
+import { boardOperations, boardFields } from './descriptions/BoardDescription';
+import { groupOperations, groupFields } from './descriptions/GroupDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
 import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
 
@@ -43,12 +45,24 @@ export class Monday implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Board',
+						value: 'board',
+					},
+					{
+						name: 'Group',
+						value: 'group',
+					},
+					{
 						name: 'Item',
 						value: 'item',
 					},
 				],
 				default: 'item',
 			},
+			...boardOperations,
+			...boardFields,
+			...groupOperations,
+			...groupFields,
 			...itemOperations,
 			...itemFields,
 		],
@@ -192,6 +206,82 @@ export class Monday implements INodeType {
 
 							returnData.push({ json: formatted });
 						});
+					} else if (operation === 'addUpdate') {
+						const itemId = this.getNodeParameter('itemId', i) as string;
+						const updateBody = this.getNodeParameter('updateBody', i) as string;
+
+						const update = await client.addUpdate(itemId, updateBody);
+						returnData.push({ json: update });
+					} else if (operation === 'getByColumnValue') {
+						const boardId = this.getNodeParameter('board', i) as string;
+						const columnId = this.getNodeParameter('columnId', i) as string;
+						const columnValue = this.getNodeParameter('columnValue', i) as string;
+						const limit = this.getNodeParameter('limit', i, 50) as number;
+
+						const items = await client.getItemsByColumnValue(boardId, columnId, columnValue, limit);
+						items.forEach((item) => returnData.push({ json: item }));
+					} else if (operation === 'moveToGroup') {
+						const itemId = this.getNodeParameter('itemId', i) as string;
+						const groupId = this.getNodeParameter('groupId', i) as string;
+
+						const item = await client.moveItemToGroup(itemId, groupId);
+						returnData.push({ json: item });
+					}
+				} else if (resource === 'board') {
+					if (operation === 'create') {
+						const boardName = this.getNodeParameter('boardName', i) as string;
+						const boardKind = this.getNodeParameter('boardKind', i) as string;
+						const workspaceId = this.getNodeParameter('workspaceId', i, '') as string;
+						const templateId = this.getNodeParameter('templateId', i, '') as string;
+
+						const board = await client.createBoard(
+							boardName,
+							boardKind,
+							workspaceId || undefined,
+							templateId || undefined,
+						);
+						returnData.push({ json: board });
+					} else if (operation === 'get') {
+						const boardId = this.getNodeParameter('boardId', i) as string;
+
+						const board = await client.getBoard(boardId);
+						returnData.push({ json: board as any });
+					} else if (operation === 'getMany') {
+						const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
+						const limit = this.getNodeParameter('limit', i, 50) as number;
+						const boardIdsStr = this.getNodeParameter('boardIds', i, '') as string;
+
+						const boardIds = boardIdsStr ? boardIdsStr.split(',').map((id) => id.trim()) : undefined;
+
+						const boards = await client.getBoards(returnAll ? 100 : limit);
+
+						// Filter by IDs if provided
+						const filteredBoards = boardIds
+							? boards.filter(board => boardIds.includes(board.id))
+							: boards;
+
+						filteredBoards.forEach((board) => returnData.push({ json: board as any }));
+					} else if (operation === 'archive') {
+						const boardId = this.getNodeParameter('boardId', i) as string;
+
+						// Archive board mutation
+						const query = `
+							mutation {
+								archive_board(board_id: ${boardId}) {
+									id
+								}
+							}
+						`;
+						const result = await client.executeQuery(query);
+						returnData.push({ json: { success: true, boardId, archived: result.data.archive_board } });
+					}
+				} else if (resource === 'group') {
+					if (operation === 'create') {
+						const boardId = this.getNodeParameter('board', i) as string;
+						const groupName = this.getNodeParameter('groupName', i) as string;
+
+						const group = await client.createGroup(boardId, groupName);
+						returnData.push({ json: group });
 					}
 				}
 			} catch (error) {
