@@ -17,7 +17,8 @@
       "Bash(npm view:*)",
       "Bash(cat:*)",
       "Bash(npm version:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
