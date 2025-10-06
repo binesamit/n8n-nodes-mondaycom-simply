@@ -112,6 +112,9 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 			},
+			hide: {
+				operation: ['getByColumnValue'],
+			},
 		},
 		default: '',
 		description: 'The board to work with',

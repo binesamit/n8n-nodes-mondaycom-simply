@@ -121,12 +121,9 @@ export const boardFields: INodeProperties[] = [
 		description: 'The workspace where the board will be created (optional)',
 	},
 	{
-		displayName: 'Template',
+		displayName: 'Template ID',
 		name: 'templateId',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadTemplates',
-		},
+		type: 'string',
 		displayOptions: {
 			show: {
 				resource: ['board'],
@@ -134,7 +131,8 @@ export const boardFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Create board from template (optional)',
+		description: 'Create board from template ID (optional - find template ID in Monday.com)',
+		placeholder: '1234567890',
 	},
 
 	// Get Many Boards

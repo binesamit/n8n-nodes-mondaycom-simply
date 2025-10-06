@@ -14,6 +14,7 @@ import { buildColumnValuesFromSimpleMode } from './utils/simpleModeBuild';
 import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import { boardOperations, boardFields } from './descriptions/BoardDescription';
 import { groupOperations, groupFields } from './descriptions/GroupDescription';
+import { folderOperations, folderFields } from './descriptions/FolderDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
 import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
 
@@ -49,6 +50,10 @@ export class Monday implements INodeType {
 						value: 'board',
 					},
 					{
+						name: 'Folder',
+						value: 'folder',
+					},
+					{
 						name: 'Group',
 						value: 'group',
 					},
@@ -61,6 +66,8 @@ export class Monday implements INodeType {
 			},
 			...boardOperations,
 			...boardFields,
+			...folderOperations,
+			...folderFields,
 			...groupOperations,
 			...groupFields,
 			...itemOperations,
@@ -222,24 +229,10 @@ export class Monday implements INodeType {
 					} else if (operation === 'getByColumnValue') {
 						const boardId = this.getNodeParameter('board', i) as string;
 						const columnId = this.getNodeParameter('columnId', i) as string;
-						let columnValue = this.getNodeParameter('columnValue', i) as string;
+						const columnValue = this.getNodeParameter('columnValue', i) as string;
 						const limit = this.getNodeParameter('limit', i, 50) as number;
 
-						// For status/dropdown columns, we need to convert label to index
-						const board = await client.getBoard(boardId);
-						const column = board.columns.find((col) => col.id === columnId);
-
-						if (column && (column.type === 'status' || column.type === 'dropdown')) {
-							const settings = JSON.parse(column.settings_str);
-							const labels = settings.labels || {};
-
-							// Find the index for this label
-							const labelEntry = Object.entries(labels).find(([_, label]) => label === columnValue);
-							if (labelEntry) {
-								columnValue = labelEntry[0]; // Use the index instead of label
-							}
-						}
-
+						// Monday.com API expects the exact label text for status/dropdown columns
 						const items = await client.getItemsByColumnValue(boardId, columnId, columnValue, limit);
 						items.forEach((item) => returnData.push({ json: item }));
 					} else if (operation === 'moveToGroup') {
@@ -302,6 +295,31 @@ export class Monday implements INodeType {
 						`;
 						const result = await client.executeQuery(query);
 						returnData.push({ json: { success: true, boardId, archived: result.data.archive_board } });
+					}
+				} else if (resource === 'folder') {
+					if (operation === 'create') {
+						const workspaceId = this.getNodeParameter('workspaceId', i) as string;
+						const folderName = this.getNodeParameter('folderName', i) as string;
+						const folderColor = this.getNodeParameter('folderColor', i, 'null') as string;
+
+						const folder = await client.createFolder(workspaceId, folderName, folderColor);
+						returnData.push({ json: folder });
+					} else if (operation === 'update') {
+						const folderId = this.getNodeParameter('folderId', i) as string;
+						const folderName = this.getNodeParameter('folderName', i, '') as string;
+						const folderColor = this.getNodeParameter('folderColor', i, '') as string;
+
+						const folder = await client.updateFolder(
+							folderId,
+							folderName || undefined,
+							folderColor || undefined,
+						);
+						returnData.push({ json: folder });
+					} else if (operation === 'delete') {
+						const folderId = this.getNodeParameter('folderId', i) as string;
+
+						const success = await client.deleteFolder(folderId);
+						returnData.push({ json: { success, folderId } });
 					}
 				} else if (resource === 'group') {
 					if (operation === 'create') {

@@ -571,6 +571,67 @@ export class MondayApiClient {
 	}
 
 	/**
+	 * Create a folder in workspace
+	 */
+	async createFolder(workspaceId: string, folderName: string, color?: string): Promise<any> {
+		const query = `
+			mutation CreateFolder($workspaceId: ID!, $folderName: String!, $color: FolderColor) {
+				create_folder(workspace_id: $workspaceId, name: $folderName, color: $color) {
+					id
+					name
+					color
+					workspace_id
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			workspaceId,
+			folderName,
+			color: color === 'null' ? null : color,
+		});
+		return response.data.create_folder;
+	}
+
+	/**
+	 * Update a folder
+	 */
+	async updateFolder(folderId: string, folderName?: string, color?: string): Promise<any> {
+		const query = `
+			mutation UpdateFolder($folderId: ID!, $folderName: String, $color: FolderColor) {
+				update_folder(folder_id: $folderId, name: $folderName, color: $color) {
+					id
+					name
+					color
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			folderId,
+			folderName,
+			color: color === 'null' ? null : color,
+		});
+		return response.data.update_folder;
+	}
+
+	/**
+	 * Delete a folder
+	 */
+	async deleteFolder(folderId: string): Promise<boolean> {
+		const query = `
+			mutation DeleteFolder($folderId: ID!) {
+				delete_folder(folder_id: $folderId) {
+					id
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { folderId });
+		return !!response.data.delete_folder;
+	}
+
+	/**
 	 * Clear cache for a specific board
 	 */
 	clearBoardCache(boardId: string): void {
