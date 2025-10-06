@@ -702,11 +702,11 @@ export class MondayApiClient {
 				const blockType = this.mapBlockType(block.type);
 				const alignment = isRTL ? 'right' : 'left';
 
-				// Build delta_format content
+				// Build deltaFormat content (camelCase as required by Monday.com API)
 				const contentJson = JSON.stringify({
 					alignment,
 					direction: 'rtl',
-					delta_format: [{ insert: content }],
+					deltaFormat: [{ insert: content }],
 				});
 
 				const query = `
