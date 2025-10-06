@@ -16,8 +16,11 @@ import { boardOperations, boardFields } from './descriptions/BoardDescription';
 import { groupOperations, groupFields } from './descriptions/GroupDescription';
 import { folderOperations, folderFields } from './descriptions/FolderDescription';
 import { docsOperations, docsFields } from './descriptions/DocsDescription';
+import { usersOperations, usersFields } from './descriptions/UsersDescription';
+import { updatesOperations, updatesFields } from './descriptions/UpdatesDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
 import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
+import { parseUserMentions } from './utils/userMentions';
 
 export class Monday implements INodeType {
 	description: INodeTypeDescription = {
@@ -66,6 +69,14 @@ export class Monday implements INodeType {
 						name: 'Item',
 						value: 'item',
 					},
+					{
+						name: 'Updates',
+						value: 'updates',
+					},
+					{
+						name: 'Users',
+						value: 'users',
+					},
 				],
 				default: 'item',
 			},
@@ -79,6 +90,10 @@ export class Monday implements INodeType {
 			...groupFields,
 			...itemOperations,
 			...itemFields,
+			...updatesOperations,
+			...updatesFields,
+			...usersOperations,
+			...usersFields,
 		],
 	};
 
@@ -338,21 +353,26 @@ export class Monday implements INodeType {
 					}
 				} else if (resource === 'docs') {
 					if (operation === 'create') {
-						const location = this.getNodeParameter('location', i) as string;
+						const workspaceId = this.getNodeParameter('workspaceId', i) as string;
+						const docName = this.getNodeParameter('docName', i) as string;
+						const docKind = this.getNodeParameter('docKind', i, 'private') as string;
+						const useFolder = this.getNodeParameter('useFolder', i, false) as boolean;
+						const folderId = useFolder ? (this.getNodeParameter('folderId', i, '') as string) : '';
 						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
 
-						const locationData: { workspaceId?: string; folderId?: string } = {};
-						if (location === 'workspace') {
-							locationData.workspaceId = this.getNodeParameter('workspaceId', i) as string;
-						} else {
-							locationData.folderId = this.getNodeParameter('folderId', i) as string;
-						}
+						// Create the doc first
+						const doc = await client.createDoc(
+							workspaceId,
+							docName,
+							docKind,
+							folderId || undefined,
+						);
 
-						let blocks: any[] | undefined;
+						// Add blocks if requested
 						if (addBlocks) {
 							const blocksData = this.getNodeParameter('blocks', i, {}) as any;
 							if (blocksData.blockItems && Array.isArray(blocksData.blockItems)) {
-								blocks = blocksData.blockItems.map((block: any) => {
+								const blocks = blocksData.blockItems.map((block: any) => {
 									const blockData: any = { type: block.type };
 
 									if (block.deltaFormat) {
@@ -367,10 +387,12 @@ export class Monday implements INodeType {
 
 									return blockData;
 								});
+
+								// Add blocks to the created doc
+								await client.addBlocksToDoc(doc.id, blocks);
 							}
 						}
 
-						const doc = await client.createDoc('', '', locationData, blocks);
 						returnData.push({ json: doc });
 					} else if (operation === 'get') {
 						const docId = this.getNodeParameter('docId', i) as string;
@@ -423,6 +445,97 @@ export class Monday implements INodeType {
 
 						const group = await client.createGroup(boardId, groupName);
 						returnData.push({ json: group });
+					}
+				} else if (resource === 'updates') {
+					if (operation === 'create') {
+						const itemId = this.getNodeParameter('itemId', i) as string;
+						let updateText = this.getNodeParameter('updateText', i) as string;
+						const shouldParseUserMentions = this.getNodeParameter('parseUserMentions', i, true) as boolean;
+
+						let mentions: Array<{ id: number; type: string }> | undefined;
+
+						// Parse user mentions if enabled
+						if (shouldParseUserMentions) {
+							const result = await parseUserMentions(updateText, async (userId: string) => {
+								return await client.getUser(userId);
+							});
+							updateText = result.text;
+							mentions = result.mentions;
+						}
+
+						const update = await client.createUpdate(itemId, updateText, mentions);
+						returnData.push({ json: update });
+					} else if (operation === 'createReply') {
+						const updateId = this.getNodeParameter('updateId', i) as string;
+						let updateText = this.getNodeParameter('updateText', i) as string;
+						const shouldParseUserMentions = this.getNodeParameter('parseUserMentions', i, true) as boolean;
+
+						let mentions: Array<{ id: number; type: string }> | undefined;
+
+						// Parse user mentions if enabled
+						if (shouldParseUserMentions) {
+							const result = await parseUserMentions(updateText, async (userId: string) => {
+								return await client.getUser(userId);
+							});
+							updateText = result.text;
+							mentions = result.mentions;
+						}
+
+						const reply = await client.createReply(updateId, updateText, mentions);
+						returnData.push({ json: reply });
+					} else if (operation === 'generateMentions') {
+						const updateText = this.getNodeParameter('updateText', i) as string;
+
+						// Parse user mentions and return the formatted output
+						const result = await parseUserMentions(updateText, async (userId: string) => {
+							return await client.getUser(userId);
+						});
+
+						returnData.push({
+							json: {
+								originalText: updateText,
+								formattedText: result.text,
+								mentions: result.mentions,
+								mentionsCount: result.mentions.length,
+							},
+						});
+					} else if (operation === 'get') {
+						const itemId = this.getNodeParameter('itemId', i) as string;
+						const limit = this.getNodeParameter('limit', i, 25) as number;
+
+						const updates = await client.getUpdates(itemId, limit);
+						updates.forEach(update => returnData.push({ json: update }));
+					}
+				} else if (resource === 'users') {
+					if (operation === 'list') {
+						const filters = this.getNodeParameter('filters', i, {}) as any;
+						const returnFields = this.getNodeParameter('returnFields', i, {}) as any;
+
+						// Parse emails and IDs if provided as comma-separated strings
+						const parsedFilters: any = {};
+						if (filters.emails) {
+							parsedFilters.emails = filters.emails.split(',').map((e: string) => e.trim()).filter((e: string) => e);
+						}
+						if (filters.ids) {
+							parsedFilters.ids = filters.ids.split(',').map((id: string) => id.trim()).filter((id: string) => id);
+						}
+						if (filters.kind) parsedFilters.kind = filters.kind;
+						if (filters.limit) parsedFilters.limit = filters.limit;
+						if (filters.name) parsedFilters.name = filters.name;
+						if (filters.newestFirst) parsedFilters.newestFirst = filters.newestFirst;
+
+						const users = await client.queryUsers(parsedFilters, returnFields);
+						users.forEach(user => returnData.push({ json: user }));
+					} else if (operation === 'get') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnFields = this.getNodeParameter('returnFields', i, {}) as any;
+
+						const user = await client.getUser(userId, returnFields);
+						if (user) {
+							returnData.push({ json: user });
+						} else {
+							throw new NodeOperationError(this.getNode(), `User with ID ${userId} not found`, { itemIndex: i });
+						}
 					}
 				}
 			} catch (error) {

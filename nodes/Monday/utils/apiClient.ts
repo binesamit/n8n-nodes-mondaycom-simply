@@ -651,17 +651,23 @@ export class MondayApiClient {
 	 * Create a doc
 	 */
 	async createDoc(
+		workspaceId: string,
 		docName: string,
-		docKind: string,
-		location: { workspaceId?: string; folderId?: string },
-		blocks?: any[],
+		docKind: string = 'private',
+		folderId?: string,
 	): Promise<any> {
-		// Build location object
-		const locationInput: any = {};
-		if (location.workspaceId) {
-			locationInput.workspace = parseInt(location.workspaceId);
-		} else if (location.folderId) {
-			locationInput.folder = parseInt(location.folderId);
+		// Build location object according to Monday.com API structure
+		const locationInput: any = {
+			workspace: {
+				workspace_id: parseInt(workspaceId),
+				name: docName,
+				kind: docKind,
+			},
+		};
+
+		// If folder is provided, add folder_id to workspace object
+		if (folderId) {
+			locationInput.workspace.folder_id = parseInt(folderId);
 		}
 
 		const query = `
@@ -680,6 +686,96 @@ export class MondayApiClient {
 			location: locationInput,
 		});
 		return response.data.create_doc;
+	}
+
+	/**
+	 * Add blocks to a doc using markdown
+	 */
+	async addBlocksToDoc(docId: string, blocks: any[]): Promise<any> {
+		// Convert blocks to markdown
+		const markdown = this.convertBlocksToMarkdown(blocks);
+
+		const query = `
+			mutation AddContentToDoc($docId: ID!, $markdown: String!) {
+				add_content_to_doc_from_markdown(doc_id: $docId, markdown: $markdown) {
+					success
+					block_ids
+					error
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			docId: parseInt(docId),
+			markdown,
+		});
+
+		if (!response.data.add_content_to_doc_from_markdown.success) {
+			throw new Error(response.data.add_content_to_doc_from_markdown.error || 'Failed to add blocks to doc');
+		}
+
+		return response.data.add_content_to_doc_from_markdown;
+	}
+
+	/**
+	 * Convert blocks array to markdown string
+	 */
+	private convertBlocksToMarkdown(blocks: any[]): string {
+		const lines: string[] = [];
+
+		for (const block of blocks) {
+			const content = block.content || '';
+
+			switch (block.type) {
+				case 'large_title':
+					lines.push(`# ${content}`);
+					break;
+				case 'medium_title':
+					lines.push(`## ${content}`);
+					break;
+				case 'small_title':
+					lines.push(`### ${content}`);
+					break;
+				case 'quote':
+					lines.push(`> ${content}`);
+					break;
+				case 'bulleted_list':
+					// Split by newlines and add bullet points
+					content.split('\n').forEach((line: string) => {
+						if (line.trim()) lines.push(`- ${line.trim()}`);
+					});
+					break;
+				case 'numbered_list':
+					// Split by newlines and add numbers
+					content.split('\n').forEach((line: string, idx: number) => {
+						if (line.trim()) lines.push(`${idx + 1}. ${line.trim()}`);
+					});
+					break;
+				case 'check_list':
+					// Split by newlines and add checkboxes
+					content.split('\n').forEach((line: string) => {
+						if (line.trim()) lines.push(`- [ ] ${line.trim()}`);
+					});
+					break;
+				case 'code':
+					lines.push('```');
+					lines.push(content);
+					lines.push('```');
+					break;
+				case 'divider':
+					lines.push('---');
+					break;
+				case 'normal_text':
+				default:
+					if (content) lines.push(content);
+					break;
+			}
+
+			// Add empty line between blocks
+			lines.push('');
+		}
+
+		return lines.join('\n');
 	}
 
 	/**
@@ -761,6 +857,241 @@ export class MondayApiClient {
 
 		const response = await this.executeQuery(query, { docId });
 		return !!response.data.delete_doc;
+	}
+
+	/**
+	 * Query users with filters and custom fields
+	 */
+	async queryUsers(filters?: {
+		emails?: string[];
+		ids?: string[];
+		kind?: string;
+		limit?: number;
+		name?: string;
+		newestFirst?: boolean;
+	}, returnFields?: {
+		includeEmail?: boolean;
+		includeAccount?: boolean;
+		includeIsAdmin?: boolean;
+		includeIsGuest?: boolean;
+		includePhoto?: boolean;
+		includeTeams?: boolean;
+		includeCreatedAt?: boolean;
+	}): Promise<any[]> {
+		// Build query fields dynamically
+		const fields = ['id', 'name'];
+
+		if (returnFields?.includeEmail) fields.push('email');
+		if (returnFields?.includeAccount) fields.push('account { id name }');
+		if (returnFields?.includeIsAdmin) fields.push('is_admin');
+		if (returnFields?.includeIsGuest) fields.push('is_guest');
+		if (returnFields?.includePhoto) fields.push('photo_small');
+		if (returnFields?.includeTeams) fields.push('teams { id name }');
+		if (returnFields?.includeCreatedAt) fields.push('created_at');
+
+		// Build query arguments
+		const args: string[] = [];
+		const variables: any = {};
+
+		if (filters?.emails && filters.emails.length > 0) {
+			args.push('emails: $emails');
+			variables.emails = filters.emails;
+		}
+		if (filters?.ids && filters.ids.length > 0) {
+			args.push('ids: $ids');
+			variables.ids = filters.ids;
+		}
+		if (filters?.kind && filters.kind !== 'all') {
+			args.push('kind: $kind');
+			variables.kind = filters.kind;
+		}
+		if (filters?.limit) {
+			args.push('limit: $limit');
+			variables.limit = filters.limit;
+		}
+		if (filters?.name) {
+			args.push('name: $name');
+			variables.name = filters.name;
+		}
+		if (filters?.newestFirst) {
+			args.push('newest_first: $newestFirst');
+			variables.newestFirst = filters.newestFirst;
+		}
+
+		const argsString = args.length > 0 ? `(${args.join(', ')})` : '';
+
+		// Build variable definitions
+		const varDefs: string[] = [];
+		if (filters?.emails) varDefs.push('$emails: [String!]');
+		if (filters?.ids) varDefs.push('$ids: [ID!]');
+		if (filters?.kind && filters.kind !== 'all') varDefs.push('$kind: UserKind');
+		if (filters?.limit) varDefs.push('$limit: Int');
+		if (filters?.name) varDefs.push('$name: String');
+		if (filters?.newestFirst) varDefs.push('$newestFirst: Boolean');
+
+		const varDefsString = varDefs.length > 0 ? `(${varDefs.join(', ')})` : '';
+
+		const query = `
+			query GetUsers${varDefsString} {
+				users${argsString} {
+					${fields.join('\n\t\t\t\t\t')}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, variables);
+		return response.data.users;
+	}
+
+	/**
+	 * Get a single user by ID
+	 */
+	async getUser(userId: string, returnFields?: {
+		includeEmail?: boolean;
+		includeAccount?: boolean;
+		includeIsAdmin?: boolean;
+		includeIsGuest?: boolean;
+		includePhoto?: boolean;
+		includeTeams?: boolean;
+		includeCreatedAt?: boolean;
+	}): Promise<any> {
+		// Build query fields dynamically
+		const fields = ['id', 'name'];
+
+		if (returnFields?.includeEmail) fields.push('email');
+		if (returnFields?.includeAccount) fields.push('account { id name }');
+		if (returnFields?.includeIsAdmin) fields.push('is_admin');
+		if (returnFields?.includeIsGuest) fields.push('is_guest');
+		if (returnFields?.includePhoto) fields.push('photo_small');
+		if (returnFields?.includeTeams) fields.push('teams { id name }');
+		if (returnFields?.includeCreatedAt) fields.push('created_at');
+
+		const query = `
+			query GetUser($userId: ID!) {
+				users(ids: [$userId]) {
+					${fields.join('\n\t\t\t\t\t')}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { userId });
+		return response.data.users[0] || null;
+	}
+
+	/**
+	 * Create an update for an item
+	 */
+	async createUpdate(
+		itemId: string,
+		updateText: string,
+		mentions?: Array<{ id: number; type: string }>,
+	): Promise<any> {
+		// Build mentions list inline since UpdateMentionInput doesn't exist
+		let mentionsList = '';
+		if (mentions && mentions.length > 0) {
+			const mentionsStr = mentions
+				.map((m) => `{id: ${m.id}, type: User}`)
+				.join(', ');
+			mentionsList = `, mentions_list: [${mentionsStr}]`;
+		}
+
+		const query = `
+			mutation CreateUpdate($itemId: ID!, $body: String!) {
+				create_update(item_id: $itemId, body: $body${mentionsList}) {
+					id
+					body
+					created_at
+					creator {
+						id
+						name
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			itemId,
+			body: updateText,
+		});
+		return response.data.create_update;
+	}
+
+	/**
+	 * Create a reply to an update
+	 */
+	async createReply(
+		updateId: string,
+		replyText: string,
+		mentions?: Array<{ id: number; type: string }>,
+	): Promise<any> {
+		// Build mentions list inline
+		let mentionsList = '';
+		if (mentions && mentions.length > 0) {
+			const mentionsStr = mentions
+				.map((m) => `{id: ${m.id}, type: User}`)
+				.join(', ');
+			mentionsList = `, mentions_list: [${mentionsStr}]`;
+		}
+
+		const query = `
+			mutation CreateReply($updateId: ID!, $body: String!) {
+				create_update_reply(update_id: $updateId, body: $body${mentionsList}) {
+					id
+					body
+					created_at
+					creator {
+						id
+						name
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			updateId,
+			body: replyText,
+		});
+		return response.data.create_update_reply;
+	}
+
+	/**
+	 * Get updates for an item
+	 */
+	async getUpdates(itemId: string, limit: number = 25): Promise<any[]> {
+		const query = `
+			query GetUpdates($itemId: [ID!]!, $limit: Int) {
+				items(ids: $itemId) {
+					updates(limit: $limit) {
+						id
+						body
+						text_body
+						created_at
+						creator {
+							id
+							name
+							email
+						}
+						replies {
+							id
+							body
+							text_body
+							created_at
+							creator {
+								id
+								name
+							}
+						}
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			itemId: [itemId],
+			limit,
+		});
+
+		return response.data.items[0]?.updates || [];
 	}
 
 	/**

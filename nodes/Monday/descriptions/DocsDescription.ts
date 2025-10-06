@@ -44,30 +44,6 @@ export const docsOperations: INodeProperties[] = [
 export const docsFields: INodeProperties[] = [
 	// Create Doc
 	{
-		displayName: 'Location',
-		name: 'location',
-		type: 'options',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['docs'],
-				operation: ['create'],
-			},
-		},
-		options: [
-			{
-				name: 'Workspace',
-				value: 'workspace',
-			},
-			{
-				name: 'Folder',
-				value: 'folder',
-			},
-		],
-		default: 'workspace',
-		description: 'Where to create the doc',
-	},
-	{
 		displayName: 'Workspace',
 		name: 'workspaceId',
 		type: 'options',
@@ -79,26 +55,75 @@ export const docsFields: INodeProperties[] = [
 			show: {
 				resource: ['docs'],
 				operation: ['create'],
-				location: ['workspace'],
 			},
 		},
 		default: '',
 		description: 'The workspace where the doc will be created',
 	},
 	{
-		displayName: 'Folder ID',
-		name: 'folderId',
+		displayName: 'Doc Name',
+		name: 'docName',
 		type: 'string',
 		required: true,
 		displayOptions: {
 			show: {
 				resource: ['docs'],
 				operation: ['create'],
-				location: ['folder'],
 			},
 		},
 		default: '',
-		description: 'The folder ID where the doc will be created',
+		description: 'Name for the new doc',
+		placeholder: 'My New Doc',
+	},
+	{
+		displayName: 'Doc Kind',
+		name: 'docKind',
+		type: 'options',
+		options: [
+			{
+				name: 'Private',
+				value: 'private',
+			},
+			{
+				name: 'Public',
+				value: 'public',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['docs'],
+				operation: ['create'],
+			},
+		},
+		default: 'private',
+		description: 'Privacy setting for the doc',
+	},
+	{
+		displayName: 'Place in Folder',
+		name: 'useFolder',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['docs'],
+				operation: ['create'],
+			},
+		},
+		default: false,
+		description: 'Whether to place the doc in a specific folder',
+	},
+	{
+		displayName: 'Folder ID',
+		name: 'folderId',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['docs'],
+				operation: ['create'],
+				useFolder: [true],
+			},
+		},
+		default: '',
+		description: 'The folder ID where the doc will be created (optional)',
 		placeholder: '2015797',
 	},
 
