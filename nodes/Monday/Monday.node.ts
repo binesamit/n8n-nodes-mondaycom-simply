@@ -175,10 +175,20 @@ export class Monday implements INodeType {
 						if (columnValuesData.columns && Array.isArray(columnValuesData.columns)) {
 							for (const col of columnValuesData.columns) {
 								const columnId = col.columnId;
-								const value = col.value;
+								let value = col.value;
 
-								// Simple text/number value - wrap in appropriate format
-								// For now, treat all as text (will auto-convert for numbers, dates, etc.)
+								// If value is a string that looks like JSON, parse it
+								if (typeof value === 'string') {
+									const trimmed = value.trim();
+									if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+										try {
+											value = JSON.parse(trimmed);
+										} catch (e) {
+											// If parsing fails, use as-is (might be a simple string)
+										}
+									}
+								}
+
 								columnValues[columnId] = value;
 							}
 						}

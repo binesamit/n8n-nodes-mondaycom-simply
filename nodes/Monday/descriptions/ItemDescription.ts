@@ -729,10 +729,14 @@ export const itemFields: INodeProperties[] = [
 					{
 						displayName: 'Value',
 						name: 'value',
-						type: 'string',
+						type: 'json',
 						default: '',
-						description: 'The value to set (text, number, date, etc.)',
-						placeholder: 'Enter value',
+						description: 'The value to set. Can be simple text/number or JSON object for complex types.',
+						placeholder: 'Text: "Hello"\nNumber: 42\nStatus: {"label": "Done"}\nPeople: {"personsAndTeams": [{"id": "12345", "kind": "person"}]}\nDate: "2024-01-15"',
+						typeOptions: {
+							alwaysOpenEditWindow: true,
+							rows: 4,
+						},
 					},
 				],
 			},
