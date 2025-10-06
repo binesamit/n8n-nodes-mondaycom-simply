@@ -141,6 +141,42 @@ export const itemFields: INodeProperties[] = [
 		description: 'Name of the new item',
 	},
 
+	// Sub-item toggle
+	{
+		displayName: 'Create as Sub-Item',
+		name: 'createAsSubItem',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create'],
+			},
+		},
+		default: false,
+		description: 'Whether to create this item as a sub-item of another item',
+	},
+
+	// Parent Item ID (when creating sub-item)
+	{
+		displayName: 'Parent Item',
+		name: 'parentItemId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadItemsFromBoard',
+			loadOptionsDependsOn: ['board'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create'],
+				createAsSubItem: [true],
+			},
+		},
+		default: '',
+		description: 'The parent item for this sub-item',
+		required: true,
+	},
+
 	// Item ID (for update/get/delete)
 	{
 		displayName: 'Item',
@@ -170,7 +206,7 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '{}',
@@ -227,7 +263,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -247,7 +283,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -269,7 +305,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -289,7 +325,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
@@ -311,7 +347,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -330,7 +366,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
@@ -352,7 +388,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -372,7 +408,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: [],
@@ -394,7 +430,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -410,7 +446,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -426,7 +462,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',
@@ -444,7 +480,7 @@ export const itemFields: INodeProperties[] = [
 			},
 			hide: {
 				operation: ['get', 'getAll', 'delete', 'readFormula', 'getByColumnValue', 'moveToGroup', 'addUpdate'],
-				columnInputMode: ['advanced', 'smart'],
+				columnInputMode: ['advanced'],
 			},
 		},
 		default: '',

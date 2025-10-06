@@ -334,6 +334,35 @@ export class MondayApiClient {
 	}
 
 	/**
+	 * Create a sub-item
+	 */
+	async createSubItem(
+		parentItemId: string,
+		itemName: string,
+		columnValues?: IDataObject,
+	): Promise<Item> {
+		const query = `
+			mutation CreateSubItem($parentItemId: ID!, $itemName: String!, $columnValues: JSON) {
+				create_subitem(parent_item_id: $parentItemId, item_name: $itemName, column_values: $columnValues) {
+					id
+					name
+					board {
+						id
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			parentItemId,
+			itemName,
+			columnValues: columnValues ? JSON.stringify(columnValues) : undefined,
+		});
+
+		return response.data.create_subitem;
+	}
+
+	/**
 	 * Update item columns
 	 */
 	async updateItemColumns(

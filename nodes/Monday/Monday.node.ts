@@ -151,7 +151,7 @@ export class Monday implements INodeType {
 				}
 
 				// Map columns to resourceMapper fields
-				const mappedFields = await Promise.all(
+				const mappedFields = (await Promise.all(
 					board.columns
 						.filter((column: any) => column.id && column.title)
 						.map(async (column: any) => {
@@ -218,47 +218,10 @@ export class Monday implements INodeType {
 									break;
 
 								case 'board-relation':
-									type = 'multiOptions';  // Multi select for board relation
-									try {
-										const relationSettings = column.settings_str ? JSON.parse(column.settings_str) : {};
-										const linkedBoardId = relationSettings.boardIds?.[0];
-										if (linkedBoardId) {
-											const linkedItems = await client.getItemsWithColumnValues(linkedBoardId.toString(), undefined, undefined, 100);
-											options = linkedItems.map((item: any) => ({
-												name: item.name,
-												value: item.id,
-											}));
-										}
-									} catch (error) {
-										options = [];
-									}
-									break;
-
 								case 'timeline':
-									// Timeline requires custom handling - return a collection type
-									return {
-										id: column.id,
-										displayName: column.title,
-										required: false,
-										defaultMatch: false,
-										display: true,
-										type: 'collection',
-										options: [
-											{
-												displayName: 'Start Date',
-												name: 'from',
-												type: 'dateTime',
-												default: '',
-											},
-											{
-												displayName: 'End Date',
-												name: 'to',
-												type: 'dateTime',
-												default: '',
-											},
-										],
-										description: `Column type: ${columnType}`,
-									};
+									// These types are not supported by resourceMapper
+									// They will be available via dynamic UI fields instead
+									return null;
 
 								case 'text':
 								case 'long-text':
@@ -281,7 +244,7 @@ export class Monday implements INodeType {
 								description: `Column type: ${columnType}`,
 							};
 						}),
-				);
+				)).filter(field => field !== null);
 
 				return {
 					fields: mappedFields,
@@ -328,7 +291,17 @@ export class Monday implements INodeType {
 							columnValues = buildColumnValuesFromSimpleMode(this, i);
 						}
 
-						const item = await client.createItem(boardId, itemName, columnValues);
+						// Check if creating as sub-item
+						const createAsSubItem = this.getNodeParameter('createAsSubItem', i, false) as boolean;
+						let item;
+
+						if (createAsSubItem) {
+							const parentItemId = this.getNodeParameter('parentItemId', i) as string;
+							item = await client.createSubItem(parentItemId, itemName, columnValues);
+						} else {
+							item = await client.createItem(boardId, itemName, columnValues);
+						}
+
 						returnData.push({ json: item });
 					} else if (operation === 'update') {
 						const boardId = this.getNodeParameter('board', i) as string;
