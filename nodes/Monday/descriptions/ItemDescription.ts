@@ -95,9 +95,9 @@ export const itemFields: INodeProperties[] = [
 				description: 'Select values using dynamic UI fields (limited to one column per type)',
 			},
 			{
-				name: 'Column by Column',
-				value: 'columnByColumn',
-				description: 'Select any column from board and set its value (supports multiple columns of same type)',
+				name: 'Smart (All Columns)',
+				value: 'smart',
+				description: 'Select any column from board with appropriate input field (via resourceMapper)',
 			},
 		],
 		default: 'advanced',
@@ -178,52 +178,38 @@ export const itemFields: INodeProperties[] = [
 		placeholder: '{"status": {"label": "Done"}, "text": "Hello"}',
 	},
 
-	// Column by Column mode - fixedCollection
+	// Smart mode - resourceMapper
 	{
-		displayName: 'Column Values',
-		name: 'columnValuesList',
-		type: 'fixedCollection',
-		typeOptions: {
-			multipleValues: true,
+		displayName: 'Columns',
+		name: 'columnsUi',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
 		},
-		placeholder: 'Add Column Value',
+		required: false,
 		displayOptions: {
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-				columnInputMode: ['columnByColumn'],
+				columnInputMode: ['smart'],
 			},
 		},
-		default: {},
-		description: 'Add column values - select any column and set value. Format: for status/dropdown enter label, for people enter ID, for timeline enter JSON {"from":"2024-01-01","to":"2024-01-31"}',
-		options: [
-			{
-				name: 'columnValue',
-				displayName: 'Column Value',
-				values: [
-					{
-						displayName: 'Column',
-						name: 'columnId',
-						type: 'options',
-						typeOptions: {
-							loadOptionsMethod: 'loadAllBoardColumnsWithType',
-							loadOptionsDependsOn: ['board'],
-						},
-						default: '',
-						description: 'Select the column to set',
-					},
-					{
-						displayName: 'Value',
-						name: 'value',
-						type: 'string',
-						default: '',
-						description: 'Enter value based on column type:<br>• <b>Status/Dropdown</b>: Label text (e.g., "Done")<br>• <b>People</b>: User ID or JSON {"personsAndTeams":[{"id":123,"kind":"person"}]}<br>• <b>Numbers</b>: Number value<br>• <b>Text</b>: Text value<br>• <b>Date</b>: YYYY-MM-DD<br>• <b>Timeline</b>: {"from":"2024-01-01","to":"2024-01-31"}<br>• <b>Board Relation</b>: {"item_ids":[123,456]}',
-						placeholder: 'Enter value based on column type',
-						hint: 'See description above for format examples per column type',
-					},
-				],
+		typeOptions: {
+			loadOptionsDependsOn: ['board'],
+			resourceMapper: {
+				resourceMapperMethod: 'getBoardColumns',
+				mode: 'add',
+				fieldWords: {
+					singular: 'column',
+					plural: 'columns',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
 			},
-		],
+		},
+		description: 'Select columns and set values - all board columns with appropriate input types',
 	},
 
 	// Simple mode - Status Column
