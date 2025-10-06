@@ -45,27 +45,9 @@ export async function parseUserMentions(
 		}
 	}
 
-	// Replace @userid with @username - process all matches
-	let result = text;
-
-	// Sort matches by position (descending) to avoid index shifting
-	const sortedMatches = matches.sort((a, b) => b.index! - a.index!);
-
-	for (const match of sortedMatches) {
-		const userId = match[1];
-		const user = userCache.get(userId);
-		const matchIndex = match.index!;
-		const matchLength = match[0].length;
-
-		if (user) {
-			// Replace @12345678 with @Username at the exact position
-			result = result.substring(0, matchIndex) +
-			         `@${user.name}` +
-			         result.substring(matchIndex + matchLength);
-		}
-	}
-
-	return { text: result, mentions };
+	// Don't replace @userid in text - Monday.com will handle the replacement
+	// Just return the original text with mentions list
+	return { text, mentions };
 }
 
 /**

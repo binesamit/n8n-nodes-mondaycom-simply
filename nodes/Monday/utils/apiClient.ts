@@ -702,11 +702,11 @@ export class MondayApiClient {
 				const blockType = this.mapBlockType(block.type);
 				const alignment = isRTL ? 'right' : 'left';
 
-				// Build deltaFormat content
+				// Build delta_format content
 				const contentJson = JSON.stringify({
 					alignment,
 					direction: 'rtl',
-					deltaFormat: [{ insert: content }],
+					delta_format: [{ insert: content }],
 				});
 
 				const query = `
