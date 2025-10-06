@@ -426,6 +426,11 @@ export async function loadDropdownValuesForSelectedColumn(
 
 	if (!boardId || !columnId) return [];
 
+	// Check cache first
+	const cacheKey = `dropdown:${boardId}:${columnId}:values`;
+	const cached = CacheManager.get<INodePropertyOptions[]>(cacheKey);
+	if (cached) return cached;
+
 	const credentials = await this.getCredentials('mondayApi');
 	const apiVersion = (credentials.apiVersion as string) || '2023-10';
 	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
@@ -446,20 +451,26 @@ export async function loadDropdownValuesForSelectedColumn(
 	const settings = JSON.parse(column.settings_str);
 	const labels = settings.labels || {};
 
+	let options: INodePropertyOptions[];
+
 	// Monday dropdown settings structure: {1: "בדיקה 1", 2: "בדיקה 2"}
 	// We need to return the label text as the value, not the ID
 	if (typeof labels === 'object' && !Array.isArray(labels)) {
-		return Object.entries(labels).map(([id, name]) => ({
+		options = Object.entries(labels).map(([id, name]) => ({
 			name: name as string,
 			value: name as string, // Monday expects the label text, not the ID
 		}));
+	} else {
+		// Fallback for array format
+		options = labels.map((label: any) => ({
+			name: typeof label === 'string' ? label : label.name,
+			value: typeof label === 'string' ? label : label.name,
+		}));
 	}
 
-	// Fallback for array format
-	return labels.map((label: any) => ({
-		name: typeof label === 'string' ? label : label.name,
-		value: typeof label === 'string' ? label : label.name,
-	}));
+	// Cache for 5 minutes
+	CacheManager.set(cacheKey, options, 5 * 60 * 1000);
+	return options;
 }
 
 /**
@@ -516,19 +527,30 @@ export async function loadLinkedBoardItemsForSelectedColumn(
 
 	// Parse linked board IDs from settings
 	const settings = JSON.parse(column.settings_str);
-	const linkedBoardIds = settings.board_ids || [];
+
+	// Monday.com uses 'boardIds' (camelCase) not 'board_ids'
+	const linkedBoardIds = settings.boardIds || settings.board_ids || [];
 
 	if (linkedBoardIds.length === 0) {
 		return [];
 	}
 
+	// Add caching for board relation items
+	const cacheKey = `boardRelation:${boardId}:${columnId}:items`;
+	const cached = CacheManager.get<INodePropertyOptions[]>(cacheKey);
+	if (cached) return cached;
+
 	// Fetch items from linked boards
 	const items = await client.getItemsFromBoards(linkedBoardIds);
 
-	return items.map((item) => ({
+	const options = items.map((item) => ({
 		name: `${item.name} (#${item.id})`,
 		value: item.id,
 	}));
+
+	// Cache for 5 minutes
+	CacheManager.set(cacheKey, options, 5 * 60 * 1000);
+	return options;
 }
 
 /**
