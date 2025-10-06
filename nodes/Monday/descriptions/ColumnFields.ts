@@ -43,6 +43,7 @@ export const columnFields: INodeProperties = {
 					type: 'options',
 					typeOptions: {
 						loadOptionsMethod: 'loadStatusValuesForSelectedColumn',
+						loadOptionsDependsOn: ['column'],
 					},
 					default: '',
 					description: 'The status value to set',
@@ -72,6 +73,7 @@ export const columnFields: INodeProperties = {
 					type: 'multiOptions',
 					typeOptions: {
 						loadOptionsMethod: 'loadDropdownValuesForSelectedColumn',
+						loadOptionsDependsOn: ['column'],
 					},
 					default: [],
 					description: 'The dropdown values to set (multi-select)',
@@ -130,6 +132,7 @@ export const columnFields: INodeProperties = {
 					type: 'multiOptions',
 					typeOptions: {
 						loadOptionsMethod: 'loadLinkedBoardItemsForSelectedColumn',
+						loadOptionsDependsOn: ['column'],
 					},
 					default: [],
 					description: 'Items from the linked board',
