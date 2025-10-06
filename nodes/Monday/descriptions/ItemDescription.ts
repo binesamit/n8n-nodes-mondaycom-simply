@@ -25,6 +25,12 @@ export const itemOperations: INodeProperties[] = [
 				action: 'Create an item',
 			},
 			{
+				name: 'Create Simple',
+				value: 'createSimple',
+				description: 'Create a new item with flexible column input',
+				action: 'Create an item (simple)',
+			},
+			{
 				name: 'Delete',
 				value: 'delete',
 				description: 'Delete an item',
@@ -630,5 +636,107 @@ export const itemFields: INodeProperties[] = [
 		},
 		default: '',
 		description: 'The destination group',
+	},
+
+	// ==================== Create Simple Fields ====================
+	// Board for createSimple
+	{
+		displayName: 'Board',
+		name: 'boardId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadBoards',
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['createSimple'],
+			},
+		},
+		default: '',
+		description: 'The board to create the item in',
+	},
+
+	// Group for createSimple
+	{
+		displayName: 'Group',
+		name: 'groupId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadGroups',
+			loadOptionsDependsOn: ['boardId'],
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['createSimple'],
+			},
+		},
+		default: '',
+		description: 'The group to create the item in (optional)',
+	},
+
+	// Item Name for createSimple
+	{
+		displayName: 'Item Name',
+		name: 'name',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['createSimple'],
+			},
+		},
+		default: '',
+		description: 'The name of the item to create',
+		placeholder: 'New Item',
+	},
+
+	// Column Values for createSimple
+	{
+		displayName: 'Column Values',
+		name: 'columnValues',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['createSimple'],
+			},
+		},
+		default: {},
+		placeholder: 'Add Column Value',
+		options: [
+			{
+				name: 'columns',
+				displayName: 'Column',
+				values: [
+					{
+						displayName: 'Column',
+						name: 'columnId',
+						type: 'options',
+						typeOptions: {
+							loadOptionsMethod: 'loadBoardColumns',
+							loadOptionsDependsOn: ['boardId'],
+						},
+						default: '',
+						description: 'The column to set',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'The value to set (text, number, date, etc.)',
+						placeholder: 'Enter value',
+					},
+				],
+			},
+		],
+		description: 'The column values to set on the new item',
 	},
 ];

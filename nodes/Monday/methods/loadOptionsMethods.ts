@@ -202,6 +202,32 @@ export async function loadStatusValues(
 }
 
 /**
+ * Load columns from board (for createSimple)
+ */
+export async function loadBoardColumns(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('boardId') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+
+	return board.columns.map((column) => ({
+		name: `${column.title} (${column.type})`,
+		value: column.id,
+		description: column.type,
+	}));
+}
+
+/**
  * Helper: Parse formula description
  */
 function parseFormulaDescription(settingsStr: string): string {

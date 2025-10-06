@@ -101,6 +101,7 @@ export class Monday implements INodeType {
 		loadOptions: {
 			loadBoards: loadOptions.loadBoards,
 			loadColumns: loadOptions.loadColumns,
+			loadBoardColumns: loadOptions.loadBoardColumns,
 			loadFormulaColumns: loadOptions.loadFormulaColumns,
 			loadUsers: loadOptions.loadUsers,
 			loadLinkedBoardItems: loadOptionsExtended.loadLinkedBoardItemsExtended,
@@ -162,6 +163,31 @@ export class Monday implements INodeType {
 						}
 
 						const item = await client.createItem(boardId, itemName, columnValues);
+						returnData.push({ json: item });
+					} else if (operation === 'createSimple') {
+						const boardId = this.getNodeParameter('boardId', i) as string;
+						const groupId = this.getNodeParameter('groupId', i, '') as string;
+						const name = this.getNodeParameter('name', i) as string;
+						const columnValuesData = this.getNodeParameter('columnValues', i, {}) as any;
+
+						// Build column values JSON from simple input
+						const columnValues: any = {};
+						if (columnValuesData.columns && Array.isArray(columnValuesData.columns)) {
+							for (const col of columnValuesData.columns) {
+								const columnId = col.columnId;
+								const value = col.value;
+
+								// Simple text/number value - wrap in appropriate format
+								// For now, treat all as text (will auto-convert for numbers, dates, etc.)
+								columnValues[columnId] = value;
+							}
+						}
+
+						// Create item with optional group
+						const item = groupId
+							? await client.createItemInGroup(boardId, groupId, name, columnValues)
+							: await client.createItem(boardId, name, columnValues);
+
 						returnData.push({ json: item });
 					} else if (operation === 'update') {
 						const boardId = this.getNodeParameter('board', i) as string;
@@ -356,7 +382,6 @@ export class Monday implements INodeType {
 						const workspaceId = this.getNodeParameter('workspaceId', i) as string;
 						const docName = this.getNodeParameter('docName', i) as string;
 						const docKind = this.getNodeParameter('docKind', i, 'private') as string;
-						const textDirection = this.getNodeParameter('textDirection', i, 'ltr') as string;
 						const useFolder = this.getNodeParameter('useFolder', i, false) as boolean;
 						const folderId = useFolder ? (this.getNodeParameter('folderId', i, '') as string) : '';
 						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
@@ -389,8 +414,8 @@ export class Monday implements INodeType {
 									return blockData;
 								});
 
-								// Add blocks to the created doc with text direction
-								await client.addBlocksToDoc(doc.id, blocks, textDirection);
+								// Add blocks to the created doc
+								await client.addBlocksToDoc(doc.id, blocks);
 							}
 						}
 

@@ -306,6 +306,34 @@ export class MondayApiClient {
 	}
 
 	/**
+	 * Create an item in a specific group
+	 */
+	async createItemInGroup(
+		boardId: string,
+		groupId: string,
+		itemName: string,
+		columnValues?: IDataObject,
+	): Promise<Item> {
+		const query = `
+			mutation CreateItem($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON) {
+				create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) {
+					id
+					name
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			boardId,
+			groupId,
+			itemName,
+			columnValues: columnValues ? JSON.stringify(columnValues) : undefined,
+		});
+
+		return response.data.create_item;
+	}
+
+	/**
 	 * Update item columns
 	 */
 	async updateItemColumns(
@@ -691,9 +719,9 @@ export class MondayApiClient {
 	/**
 	 * Add blocks to a doc using markdown
 	 */
-	async addBlocksToDoc(docId: string, blocks: any[], textDirection: string = 'ltr'): Promise<any> {
-		// Convert blocks to markdown with RTL support
-		const markdown = this.convertBlocksToMarkdown(blocks, textDirection);
+	async addBlocksToDoc(docId: string, blocks: any[]): Promise<any> {
+		// Convert blocks to markdown
+		const markdown = this.convertBlocksToMarkdown(blocks);
 
 		const query = `
 			mutation AddContentToDoc($docId: ID!, $markdown: String!) {
@@ -718,58 +746,43 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Convert blocks array to markdown string with RTL support
+	 * Convert blocks array to markdown string
 	 */
-	private convertBlocksToMarkdown(blocks: any[], textDirection: string = 'ltr'): string {
+	private convertBlocksToMarkdown(blocks: any[]): string {
 		const lines: string[] = [];
-		const isRTL = textDirection === 'rtl';
-		// RLE (Right-to-Left Embedding) to start RTL block, PDF (Pop Directional Formatting) to end it
-		const RLE = '\u202B';  // Right-to-Left Embedding
-		const PDF = '\u202C';  // Pop Directional Formatting
 
 		for (const block of blocks) {
 			const content = block.content || '';
-			// Wrap RTL content with RLE...PDF
-			const rtlContent = isRTL ? RLE + content + PDF : content;
 
 			switch (block.type) {
 				case 'large_title':
-					lines.push(`# ${rtlContent}`);
+					lines.push(`# ${content}`);
 					break;
 				case 'medium_title':
-					lines.push(`## ${rtlContent}`);
+					lines.push(`## ${content}`);
 					break;
 				case 'small_title':
-					lines.push(`### ${rtlContent}`);
+					lines.push(`### ${content}`);
 					break;
 				case 'quote':
-					lines.push(`> ${rtlContent}`);
+					lines.push(`> ${content}`);
 					break;
 				case 'bulleted_list':
 					// Split by newlines and add bullet points
 					content.split('\n').forEach((line: string) => {
-						if (line.trim()) {
-							const rtlLine = isRTL ? RLE + line.trim() + PDF : line.trim();
-							lines.push(`- ${rtlLine}`);
-						}
+						if (line.trim()) lines.push(`- ${line.trim()}`);
 					});
 					break;
 				case 'numbered_list':
 					// Split by newlines and add numbers
 					content.split('\n').forEach((line: string, idx: number) => {
-						if (line.trim()) {
-							const rtlLine = isRTL ? RLE + line.trim() + PDF : line.trim();
-							lines.push(`${idx + 1}. ${rtlLine}`);
-						}
+						if (line.trim()) lines.push(`${idx + 1}. ${line.trim()}`);
 					});
 					break;
 				case 'check_list':
 					// Split by newlines and add checkboxes
 					content.split('\n').forEach((line: string) => {
-						if (line.trim()) {
-							const rtlLine = isRTL ? RLE + line.trim() + PDF : line.trim();
-							lines.push(`- [ ] ${rtlLine}`);
-						}
+						if (line.trim()) lines.push(`- [ ] ${line.trim()}`);
 					});
 					break;
 				case 'code':
@@ -782,7 +795,7 @@ export class MondayApiClient {
 					break;
 				case 'normal_text':
 				default:
-					if (content) lines.push(rtlContent);
+					if (content) lines.push(content);
 					break;
 			}
 

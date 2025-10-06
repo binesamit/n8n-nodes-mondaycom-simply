@@ -16,7 +16,8 @@
       "Bash(npm publish:*)",
       "Bash(npm view:*)",
       "Bash(cat:*)",
-      "Bash(npm version:*)"
+      "Bash(npm version:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []
