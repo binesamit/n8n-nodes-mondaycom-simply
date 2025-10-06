@@ -253,15 +253,17 @@ export class MondayApiClient {
 		const query = `
 			query GetItemsWithValues($boardId: [ID!], $itemIds: [ID!], $columnIds: [String!], $limit: Int) {
 				boards(ids: $boardId) {
-					items(ids: $itemIds, limit: $limit) {
-						id
-						name
-						column_values(ids: $columnIds) {
+					items_page(limit: $limit, query_params: {ids: $itemIds}) {
+						items {
 							id
-							title
-							type
-							text
-							value
+							name
+							column_values(ids: $columnIds) {
+								id
+								title
+								type
+								text
+								value
+							}
 						}
 					}
 				}
@@ -279,7 +281,7 @@ export class MondayApiClient {
 			columnIds?.some((id) => id.includes('formula')) ? 'readFormula' : undefined,
 		);
 
-		return response.data.boards[0]?.items || [];
+		return response.data.boards[0]?.items_page?.items || [];
 	}
 
 	/**
