@@ -480,6 +480,95 @@ export class MondayApiClient {
 	}
 
 	/**
+	 * Get all workspaces
+	 */
+	async getWorkspaces(): Promise<any[]> {
+		const cacheKey = 'workspaces_list';
+		const cached = CacheManager.get<any[]>(cacheKey);
+
+		if (cached) {
+			return cached;
+		}
+
+		const query = `
+			query GetWorkspaces {
+				workspaces {
+					id
+					name
+					kind
+					description
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query);
+		const workspaces = response.data.workspaces;
+
+		CacheManager.set(cacheKey, workspaces, 10 * 60 * 1000); // 10 minutes TTL
+		return workspaces;
+	}
+
+	/**
+	 * Get templates from account
+	 */
+	async getTemplates(): Promise<any[]> {
+		const cacheKey = 'templates_list';
+		const cached = CacheManager.get<any[]>(cacheKey);
+
+		if (cached) {
+			return cached;
+		}
+
+		const query = `
+			query GetTemplates {
+				boards(board_kind: template) {
+					id
+					name
+					description
+					board_kind
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query);
+		const templates = response.data.boards;
+
+		CacheManager.set(cacheKey, templates, 10 * 60 * 1000); // 10 minutes TTL
+		return templates;
+	}
+
+	/**
+	 * Get groups from a specific board
+	 */
+	async getGroups(boardId: string): Promise<any[]> {
+		const cacheKey = `groups:${boardId}`;
+		const cached = CacheManager.get<any[]>(cacheKey);
+
+		if (cached) {
+			return cached;
+		}
+
+		const query = `
+			query GetGroups($boardId: [ID!]) {
+				boards(ids: $boardId) {
+					groups {
+						id
+						title
+						color
+						position
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { boardId: [boardId] });
+		const groups = response.data.boards[0]?.groups || [];
+
+		CacheManager.set(cacheKey, groups, 5 * 60 * 1000); // 5 minutes TTL
+		return groups;
+	}
+
+	/**
 	 * Clear cache for a specific board
 	 */
 	clearBoardCache(boardId: string): void {

@@ -88,6 +88,11 @@ export class Monday implements INodeType {
 			loadLinkedBoardItemsForSelectedColumn: loadOptionsExtended.loadLinkedBoardItemsForSelectedColumn,
 			loadDropdownValues: loadOptionsExtended.loadDropdownValues,
 			loadUsersAndGuests: loadOptionsExtended.loadUsersAndGuests,
+			// New loaders for v2.1.1
+			loadWorkspaces: loadOptionsExtended.loadWorkspaces,
+			loadTemplates: loadOptionsExtended.loadTemplates,
+			loadGroups: loadOptionsExtended.loadGroups,
+			loadBoardsForSelection: loadOptionsExtended.loadBoardsForSelection,
 		},
 	};
 
@@ -215,8 +220,23 @@ export class Monday implements INodeType {
 					} else if (operation === 'getByColumnValue') {
 						const boardId = this.getNodeParameter('board', i) as string;
 						const columnId = this.getNodeParameter('columnId', i) as string;
-						const columnValue = this.getNodeParameter('columnValue', i) as string;
+						let columnValue = this.getNodeParameter('columnValue', i) as string;
 						const limit = this.getNodeParameter('limit', i, 50) as number;
+
+						// For status/dropdown columns, we need to convert label to index
+						const board = await client.getBoard(boardId);
+						const column = board.columns.find((col) => col.id === columnId);
+
+						if (column && (column.type === 'status' || column.type === 'dropdown')) {
+							const settings = JSON.parse(column.settings_str);
+							const labels = settings.labels || {};
+
+							// Find the index for this label
+							const labelEntry = Object.entries(labels).find(([_, label]) => label === columnValue);
+							if (labelEntry) {
+								columnValue = labelEntry[0]; // Use the index instead of label
+							}
+						}
 
 						const items = await client.getItemsByColumnValue(boardId, columnId, columnValue, limit);
 						items.forEach((item) => returnData.push({ json: item }));

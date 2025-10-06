@@ -562,6 +562,23 @@ export const itemFields: INodeProperties[] = [
 
 	// Move to Group fields
 	{
+		displayName: 'Board',
+		name: 'board',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadBoardsForSelection',
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['moveToGroup'],
+			},
+		},
+		default: '',
+		description: 'The board containing the item',
+	},
+	{
 		displayName: 'Item ID',
 		name: 'itemId',
 		type: 'string',
@@ -576,9 +593,13 @@ export const itemFields: INodeProperties[] = [
 		description: 'The ID of the item to move',
 	},
 	{
-		displayName: 'Group ID',
+		displayName: 'Group',
 		name: 'groupId',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadGroups',
+			loadOptionsDependsOn: ['board'],
+		},
 		required: true,
 		displayOptions: {
 			show: {
@@ -587,7 +608,6 @@ export const itemFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'The ID of the destination group',
-		placeholder: 'topics',
+		description: 'The destination group',
 	},
 ];

@@ -42,11 +42,14 @@ export const boardOperations: INodeProperties[] = [
 ];
 
 export const boardFields: INodeProperties[] = [
-	// Archive Board
+	// Get/Archive Board
 	{
-		displayName: 'Board ID',
+		displayName: 'Board',
 		name: 'boardId',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadBoardsForSelection',
+		},
 		required: true,
 		displayOptions: {
 			show: {
@@ -55,7 +58,7 @@ export const boardFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'The ID of the board',
+		description: 'The board to get/archive',
 	},
 
 	// Create Board
@@ -102,9 +105,12 @@ export const boardFields: INodeProperties[] = [
 		description: 'The board kind',
 	},
 	{
-		displayName: 'Workspace ID',
+		displayName: 'Workspace',
 		name: 'workspaceId',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadWorkspaces',
+		},
 		displayOptions: {
 			show: {
 				resource: ['board'],
@@ -112,12 +118,15 @@ export const boardFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'The workspace ID (optional)',
+		description: 'The workspace where the board will be created (optional)',
 	},
 	{
-		displayName: 'Template ID',
+		displayName: 'Template',
 		name: 'templateId',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'loadTemplates',
+		},
 		displayOptions: {
 			show: {
 				resource: ['board'],
@@ -161,17 +170,19 @@ export const boardFields: INodeProperties[] = [
 		description: 'Max number of results to return',
 	},
 	{
-		displayName: 'Board IDs',
+		displayName: 'Boards',
 		name: 'boardIds',
-		type: 'string',
+		type: 'multiOptions',
+		typeOptions: {
+			loadOptionsMethod: 'loadBoardsForSelection',
+		},
 		displayOptions: {
 			show: {
 				resource: ['board'],
 				operation: ['getMany'],
 			},
 		},
-		default: '',
-		description: 'Comma-separated list of board IDs (leave empty for all boards)',
-		placeholder: '123456,789012',
+		default: [],
+		description: 'Select specific boards (leave empty for all boards)',
 	},
 ];

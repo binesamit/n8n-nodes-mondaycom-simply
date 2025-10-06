@@ -498,3 +498,103 @@ export async function loadLinkedBoardItemsForSelectedColumn(
 		value: item.id,
 	}));
 }
+
+/**
+ * Load all workspaces
+ */
+export async function loadWorkspaces(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const workspaces = await client.getWorkspaces();
+
+	return workspaces.map((workspace) => ({
+		name: workspace.name,
+		value: workspace.id.toString(),
+	}));
+}
+
+/**
+ * Load all templates
+ */
+export async function loadTemplates(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const templates = await client.getTemplates();
+
+	return templates.map((template) => ({
+		name: template.name,
+		value: template.id.toString(),
+		description: template.description,
+	}));
+}
+
+/**
+ * Load groups from board
+ */
+export async function loadGroups(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const groups = await client.getGroups(boardId);
+
+	return groups.map((group) => ({
+		name: group.title,
+		value: group.id,
+	}));
+}
+
+/**
+ * Load all boards for selection
+ */
+export async function loadBoardsForSelection(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const boards = await client.getBoards(500);
+
+	return boards.map((board) => ({
+		name: board.name,
+		value: board.id,
+	}));
+}
