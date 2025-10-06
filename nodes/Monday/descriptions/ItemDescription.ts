@@ -694,191 +694,48 @@ export const itemFields: INodeProperties[] = [
 		placeholder: 'New Item',
 	},
 
-	// Status Column for createSimple
+	// Column Values for createSimple - Dynamic fields
 	{
-		displayName: 'Status Column',
-		name: 'statusColumn',
-		type: 'options',
+		displayName: 'Column Values',
+		name: 'columnValuesUi',
+		type: 'fixedCollection',
 		typeOptions: {
-			loadOptionsMethod: 'loadStatusColumns',
-			loadOptionsDependsOn: ['board'],
+			multipleValues: true,
 		},
+		placeholder: 'Add Column Value',
 		displayOptions: {
 			show: {
 				resource: ['item'],
 				operation: ['createSimple'],
 			},
 		},
-		default: '',
-		description: 'Select a status column to update',
-	},
-	{
-		displayName: 'Status Value',
-		name: 'statusValue',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadStatusValues',
-			loadOptionsDependsOn: ['board', 'statusColumn'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
+		default: {},
+		options: [
+			{
+				name: 'columnValue',
+				displayName: 'Column Value',
+				values: [
+					{
+						displayName: 'Column',
+						name: 'columnId',
+						type: 'options',
+						typeOptions: {
+							loadOptionsMethod: 'loadBoardColumns',
+							loadOptionsDependsOn: ['board'],
+						},
+						default: '',
+						description: 'The column to set',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'The value to set (format depends on column type)',
+						placeholder: 'Enter value based on column type',
+					},
+				],
 			},
-		},
-		default: '',
-		description: 'Select the status value',
-	},
-
-	// Dropdown Column for createSimple
-	{
-		displayName: 'Dropdown Column',
-		name: 'dropdownColumn',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadDropdownColumns',
-			loadOptionsDependsOn: ['board'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'Select a dropdown column to update',
-	},
-	{
-		displayName: 'Dropdown Values',
-		name: 'dropdownValues',
-		type: 'multiOptions',
-		typeOptions: {
-			loadOptionsMethod: 'loadDropdownValues',
-			loadOptionsDependsOn: ['board', 'dropdownColumn'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: [],
-		description: 'Select dropdown values (multi-select)',
-	},
-
-	// People Column for createSimple
-	{
-		displayName: 'People Column',
-		name: 'peopleColumn',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadPeopleColumns',
-			loadOptionsDependsOn: ['board'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'Select a people column to update',
-	},
-	{
-		displayName: 'People',
-		name: 'peopleValues',
-		type: 'multiOptions',
-		typeOptions: {
-			loadOptionsMethod: 'loadUsersAndGuests',
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: [],
-		description: 'Select users and guests',
-	},
-
-	// Board Relation Column for createSimple
-	{
-		displayName: 'Board Relation Column',
-		name: 'boardRelationColumn',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadBoardRelationColumns',
-			loadOptionsDependsOn: ['board'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'Select a board relation column',
-	},
-	{
-		displayName: 'Related Items',
-		name: 'boardRelationValues',
-		type: 'multiOptions',
-		typeOptions: {
-			loadOptionsMethod: 'loadLinkedBoardItems',
-			loadOptionsDependsOn: ['board', 'boardRelationColumn'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: [],
-		description: 'Select items from the linked board',
-	},
-
-	// Timeline Column for createSimple
-	{
-		displayName: 'Timeline Column',
-		name: 'timelineColumn',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadTimelineColumns',
-			loadOptionsDependsOn: ['board'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'Select a timeline column',
-	},
-	{
-		displayName: 'Timeline Start Date',
-		name: 'timelineStartDate',
-		type: 'dateTime',
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'Start date for timeline',
-	},
-	{
-		displayName: 'Timeline End Date',
-		name: 'timelineEndDate',
-		type: 'dateTime',
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'End date for timeline',
+		],
 	},
 ];

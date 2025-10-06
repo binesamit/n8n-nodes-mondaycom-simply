@@ -168,9 +168,30 @@ export class Monday implements INodeType {
 						const boardId = this.getNodeParameter('board', i) as string;
 						const groupId = this.getNodeParameter('groupId', i, '') as string;
 						const name = this.getNodeParameter('name', i) as string;
+						const columnValuesUi = this.getNodeParameter('columnValuesUi', i, {}) as any;
 
-						// Build column values from Simple Mode UI fields (same as regular Create)
-						const columnValues = buildColumnValuesFromSimpleMode(this, i);
+						// Build column values from UI
+						const columnValues: any = {};
+						if (columnValuesUi.columnValue && Array.isArray(columnValuesUi.columnValue)) {
+							for (const col of columnValuesUi.columnValue) {
+								const columnId = col.columnId;
+								let value = col.value;
+
+								// Try to parse JSON if the value looks like JSON
+								if (typeof value === 'string') {
+									const trimmed = value.trim();
+									if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+										try {
+											value = JSON.parse(trimmed);
+										} catch (e) {
+											// Keep as string if not valid JSON
+										}
+									}
+								}
+
+								columnValues[columnId] = value;
+							}
+						}
 
 						// Create item with optional group
 						const item = groupId
