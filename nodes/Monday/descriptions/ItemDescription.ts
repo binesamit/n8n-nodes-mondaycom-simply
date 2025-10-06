@@ -25,12 +25,6 @@ export const itemOperations: INodeProperties[] = [
 				action: 'Create an item',
 			},
 			{
-				name: 'Create Simple',
-				value: 'createSimple',
-				description: 'Create a new item with flexible column input',
-				action: 'Create an item (simple)',
-			},
-			{
 				name: 'Delete',
 				value: 'delete',
 				description: 'Delete an item',
@@ -119,7 +113,7 @@ export const itemFields: INodeProperties[] = [
 				resource: ['item'],
 			},
 			hide: {
-				operation: ['getByColumnValue', 'createSimple'],
+				operation: ['getByColumnValue'],
 			},
 		},
 		default: '',
@@ -661,94 +655,4 @@ export const itemFields: INodeProperties[] = [
 		default: '',
 		description: 'The destination group',
 	},
-
-	// ==================== Create Simple Fields ====================
-	// Board for createSimple
-	{
-		displayName: 'Board',
-		name: 'board',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadBoards',
-		},
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'The board to create the item in',
-	},
-
-	// Group for createSimple
-	{
-		displayName: 'Group',
-		name: 'groupId',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'loadGroups',
-			loadOptionsDependsOn: ['board'],
-		},
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'The group to create the item in (optional)',
-	},
-
-	// Item Name for createSimple
-	{
-		displayName: 'Item Name',
-		name: 'name',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		default: '',
-		description: 'The name of the item to create',
-		placeholder: 'New Item',
-	},
-
-	// Column Values for createSimple - using resourceMapper
-	{
-		displayName: 'Columns',
-		name: 'columns',
-		type: 'resourceMapper',
-		noDataExpression: true,
-		default: {
-			mappingMode: 'defineBelow',
-			value: null,
-		},
-		required: false,
-		displayOptions: {
-			show: {
-				resource: ['item'],
-				operation: ['createSimple'],
-			},
-		},
-		typeOptions: {
-			loadOptionsDependsOn: ['board'],
-			resourceMapper: {
-				resourceMapperMethod: 'getBoardColumns',
-				mode: 'add',
-				fieldWords: {
-					singular: 'column',
-					plural: 'columns',
-				},
-				addAllFields: true,
-				multiKeyMatch: false,
-			},
-		},
-		description: 'Map the column values for the new item. Each column type will show the appropriate input (dropdown for status, people picker, etc.)',
-	},
-
 ];
