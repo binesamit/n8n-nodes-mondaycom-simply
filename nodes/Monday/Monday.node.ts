@@ -112,6 +112,12 @@ export class Monday implements INodeType {
 			loadPeopleColumns: loadOptionsExtended.loadPeopleColumns,
 			loadBoardRelationColumns: loadOptionsExtended.loadBoardRelationColumns,
 			loadTimelineColumns: loadOptionsExtended.loadTimelineColumns,
+			// Filtered column type loaders (v3.0.0)
+			loadTextColumns: loadOptionsExtended.loadTextColumns,
+			loadNumberColumns: loadOptionsExtended.loadNumberColumns,
+			loadDateColumns: loadOptionsExtended.loadDateColumns,
+			loadCheckboxColumns: loadOptionsExtended.loadCheckboxColumns,
+			loadAllColumns: loadOptionsExtended.loadAllColumns,
 			// Value loaders for selected columns in fixedCollection
 			loadStatusValuesForSelectedColumn: loadOptionsExtended.loadStatusValuesForSelectedColumn,
 			loadDropdownValuesForSelectedColumn: loadOptionsExtended.loadDropdownValuesForSelectedColumn,

@@ -625,3 +625,146 @@ export async function loadItemsFromBoard(
 		value: item.id,
 	}));
 }
+
+/**
+ * Load text columns (text and long-text only)
+ */
+export async function loadTextColumns(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+	const textColumns = board.columns.filter((col) =>
+		col.type === 'text' || col.type === 'long-text'
+	);
+
+	return textColumns.map((col) => ({
+		name: col.title,
+		value: col.id,
+	}));
+}
+
+/**
+ * Load number columns
+ */
+export async function loadNumberColumns(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+	const numberColumns = board.columns.filter((col) =>
+		col.type === 'numbers' || col.type === 'numeric'
+	);
+
+	return numberColumns.map((col) => ({
+		name: col.title,
+		value: col.id,
+	}));
+}
+
+/**
+ * Load date columns
+ */
+export async function loadDateColumns(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+	const dateColumns = board.columns.filter((col) => col.type === 'date');
+
+	return dateColumns.map((col) => ({
+		name: col.title,
+		value: col.id,
+	}));
+}
+
+/**
+ * Load checkbox columns
+ */
+export async function loadCheckboxColumns(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+	const checkboxColumns = board.columns.filter((col) => col.type === 'checkbox');
+
+	return checkboxColumns.map((col) => ({
+		name: col.title,
+		value: col.id,
+	}));
+}
+
+/**
+ * Load all columns (for Free field)
+ */
+export async function loadAllColumns(
+	this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+	const boardId = this.getCurrentNodeParameter('board') as string;
+	if (!boardId) return [];
+
+	const credentials = await this.getCredentials('mondayApi');
+	const apiVersion = (credentials.apiVersion as string) || '2023-10';
+	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
+
+	const client = new MondayApiClient(
+		credentials.apiToken as string,
+		apiVersion,
+		autoUpgrade,
+	);
+
+	const board = await client.getBoard(boardId);
+
+	return board.columns.map((col) => ({
+		name: `${col.title} (${col.type})`,
+		value: col.id,
+	}));
+}

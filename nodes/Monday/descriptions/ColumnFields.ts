@@ -183,11 +183,11 @@ export const columnFields: INodeProperties = {
 					name: 'column',
 					type: 'options',
 					typeOptions: {
-						loadOptionsMethod: 'loadColumns',
+						loadOptionsMethod: 'loadTextColumns',
 						loadOptionsDependsOn: ['board'],
 					},
 					default: '',
-					description: 'The text column to update',
+					description: 'The text column to update (text and long-text only)',
 				},
 				{
 					displayName: 'Text Value',
@@ -209,11 +209,11 @@ export const columnFields: INodeProperties = {
 					name: 'column',
 					type: 'options',
 					typeOptions: {
-						loadOptionsMethod: 'loadColumns',
+						loadOptionsMethod: 'loadNumberColumns',
 						loadOptionsDependsOn: ['board'],
 					},
 					default: '',
-					description: 'The number column to update',
+					description: 'The number column to update (numbers only)',
 				},
 				{
 					displayName: 'Number Value',
@@ -235,11 +235,11 @@ export const columnFields: INodeProperties = {
 					name: 'column',
 					type: 'options',
 					typeOptions: {
-						loadOptionsMethod: 'loadColumns',
+						loadOptionsMethod: 'loadDateColumns',
 						loadOptionsDependsOn: ['board'],
 					},
 					default: '',
-					description: 'The date column to update',
+					description: 'The date column to update (date only)',
 				},
 				{
 					displayName: 'Date Value',
@@ -261,11 +261,11 @@ export const columnFields: INodeProperties = {
 					name: 'column',
 					type: 'options',
 					typeOptions: {
-						loadOptionsMethod: 'loadColumns',
+						loadOptionsMethod: 'loadCheckboxColumns',
 						loadOptionsDependsOn: ['board'],
 					},
 					default: '',
-					description: 'The checkbox column to update',
+					description: 'The checkbox column to update (checkbox only)',
 				},
 				{
 					displayName: 'Checked',
@@ -273,6 +273,32 @@ export const columnFields: INodeProperties = {
 					type: 'boolean',
 					default: false,
 					description: 'Whether the checkbox is checked',
+				},
+			],
+		},
+
+		// Free Column (any type with string input)
+		{
+			name: 'freeColumn',
+			displayName: 'Free Column',
+			values: [
+				{
+					displayName: 'Column',
+					name: 'column',
+					type: 'options',
+					typeOptions: {
+						loadOptionsMethod: 'loadAllColumns',
+						loadOptionsDependsOn: ['board'],
+					},
+					default: '',
+					description: 'Any column from the board (type shown in parentheses)',
+				},
+				{
+					displayName: 'Value',
+					name: 'value',
+					type: 'string',
+					default: '',
+					description: 'The value to set (as text/JSON)',
 				},
 			],
 		},

@@ -118,9 +118,33 @@ export function buildColumnValuesFromColumnByColumn(
 	if (columnData.checkboxColumn && Array.isArray(columnData.checkboxColumn)) {
 		for (const checkboxCol of columnData.checkboxColumn) {
 			const columnId = checkboxCol.column;
-			const value = checkboxCol.checked;
+			const value = checkboxCol.value;
 			if (columnId && value !== undefined) {
 				columnValues[columnId] = { checked: value ? 'true' : 'false' };
+			}
+		}
+	}
+
+	// Free columns (any type with string input)
+	if (columnData.freeColumn && Array.isArray(columnData.freeColumn)) {
+		for (const freeCol of columnData.freeColumn) {
+			const columnId = freeCol.column;
+			const value = freeCol.value;
+			if (columnId && value !== undefined && value !== '') {
+				// Try to parse as JSON if it looks like JSON
+				let processedValue = value;
+				if (typeof value === 'string') {
+					const trimmed = value.trim();
+					if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+						try {
+							processedValue = JSON.parse(trimmed);
+						} catch (e) {
+							// Keep as string if parsing fails
+							processedValue = value;
+						}
+					}
+				}
+				columnValues[columnId] = processedValue;
 			}
 		}
 	}
