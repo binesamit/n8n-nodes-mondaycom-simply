@@ -318,7 +318,20 @@ export async function loadStatusValuesForSelectedColumn(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
-	const columnId = this.getCurrentNodeParameter('column') as string;
+
+	// Try to get column from different possible paths
+	let columnId: string | undefined;
+	try {
+		// Try accessing within fixedCollection context
+		columnId = this.getCurrentNodeParameter('columnValues.statusColumn.column') as string;
+	} catch (error) {
+		// Fallback to simple path
+		try {
+			columnId = this.getCurrentNodeParameter('column') as string;
+		} catch (e) {
+			// Unable to get column
+		}
+	}
 
 	if (!boardId || !columnId) return [];
 
@@ -360,7 +373,20 @@ export async function loadDropdownValuesForSelectedColumn(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
-	const columnId = this.getCurrentNodeParameter('column') as string;
+
+	// Try to get column from different possible paths
+	let columnId: string | undefined;
+	try {
+		// Try accessing within fixedCollection context
+		columnId = this.getCurrentNodeParameter('columnValues.dropdownColumn.column') as string;
+	} catch (error) {
+		// Fallback to simple path
+		try {
+			columnId = this.getCurrentNodeParameter('column') as string;
+		} catch (e) {
+			// Unable to get column
+		}
+	}
 
 	if (!boardId || !columnId) return [];
 
@@ -397,7 +423,20 @@ export async function loadLinkedBoardItemsForSelectedColumn(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
-	const columnId = this.getCurrentNodeParameter('column') as string;
+
+	// Try to get column from different possible paths
+	let columnId: string | undefined;
+	try {
+		// Try accessing within fixedCollection context
+		columnId = this.getCurrentNodeParameter('columnValues.boardRelationColumn.column') as string;
+	} catch (error) {
+		// Fallback to simple path
+		try {
+			columnId = this.getCurrentNodeParameter('column') as string;
+		} catch (e) {
+			// Unable to get column
+		}
+	}
 
 	if (!boardId || !columnId) return [];
 
