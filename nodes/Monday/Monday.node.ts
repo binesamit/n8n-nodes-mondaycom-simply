@@ -15,6 +15,7 @@ import { itemOperations, itemFields } from './descriptions/ItemDescription';
 import { boardOperations, boardFields } from './descriptions/BoardDescription';
 import { groupOperations, groupFields } from './descriptions/GroupDescription';
 import { folderOperations, folderFields } from './descriptions/FolderDescription';
+import { docsOperations, docsFields } from './descriptions/DocsDescription';
 import * as loadOptions from './methods/loadOptionsMethods';
 import * as loadOptionsExtended from './methods/loadOptionsMethodsExtended';
 
@@ -50,6 +51,10 @@ export class Monday implements INodeType {
 						value: 'board',
 					},
 					{
+						name: 'Docs',
+						value: 'docs',
+					},
+					{
 						name: 'Folder',
 						value: 'folder',
 					},
@@ -66,6 +71,8 @@ export class Monday implements INodeType {
 			},
 			...boardOperations,
 			...boardFields,
+			...docsOperations,
+			...docsFields,
 			...folderOperations,
 			...folderFields,
 			...groupOperations,
@@ -247,12 +254,14 @@ export class Monday implements INodeType {
 						const boardName = this.getNodeParameter('boardName', i) as string;
 						const boardKind = this.getNodeParameter('boardKind', i) as string;
 						const workspaceId = this.getNodeParameter('workspaceId', i, '') as string;
+						const folderId = this.getNodeParameter('folderId', i, '') as string;
 						const templateId = this.getNodeParameter('templateId', i, '') as string;
 
 						const board = await client.createBoard(
 							boardName,
 							boardKind,
 							workspaceId || undefined,
+							folderId || undefined,
 							templateId || undefined,
 						);
 						returnData.push({ json: board });
@@ -320,6 +329,88 @@ export class Monday implements INodeType {
 
 						const success = await client.deleteFolder(folderId);
 						returnData.push({ json: { success, folderId } });
+					}
+				} else if (resource === 'docs') {
+					if (operation === 'create') {
+						const docName = this.getNodeParameter('docName', i) as string;
+						const docKind = this.getNodeParameter('docKind', i) as string;
+						const location = this.getNodeParameter('location', i) as string;
+						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
+
+						const locationData: { workspaceId?: string; folderId?: string } = {};
+						if (location === 'workspace') {
+							locationData.workspaceId = this.getNodeParameter('workspaceId', i) as string;
+						} else {
+							locationData.folderId = this.getNodeParameter('folderId', i) as string;
+						}
+
+						let blocks: any[] | undefined;
+						if (addBlocks) {
+							const blocksData = this.getNodeParameter('blocks', i, {}) as any;
+							if (blocksData.blockItems && Array.isArray(blocksData.blockItems)) {
+								blocks = blocksData.blockItems.map((block: any) => {
+									const blockData: any = { type: block.type };
+
+									if (block.deltaFormat) {
+										try {
+											blockData.delta_format = JSON.parse(block.deltaFormat);
+										} catch (e) {
+											blockData.content = block.content || '';
+										}
+									} else if (block.content) {
+										blockData.content = block.content;
+									}
+
+									return blockData;
+								});
+							}
+						}
+
+						const doc = await client.createDoc(docName, docKind, locationData, blocks);
+						returnData.push({ json: doc });
+					} else if (operation === 'get') {
+						const docId = this.getNodeParameter('docId', i) as string;
+
+						const doc = await client.getDoc(docId);
+						returnData.push({ json: doc });
+					} else if (operation === 'update') {
+						const docId = this.getNodeParameter('docId', i) as string;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) as any;
+						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
+
+						const updates: { name?: string; blocks?: any[] } = {};
+						if (updateFields.docName) {
+							updates.name = updateFields.docName;
+						}
+
+						if (addBlocks) {
+							const blocksData = this.getNodeParameter('blocks', i, {}) as any;
+							if (blocksData.blockItems && Array.isArray(blocksData.blockItems)) {
+								updates.blocks = blocksData.blockItems.map((block: any) => {
+									const blockData: any = { type: block.type };
+
+									if (block.deltaFormat) {
+										try {
+											blockData.delta_format = JSON.parse(block.deltaFormat);
+										} catch (e) {
+											blockData.content = block.content || '';
+										}
+									} else if (block.content) {
+										blockData.content = block.content;
+									}
+
+									return blockData;
+								});
+							}
+						}
+
+						const doc = await client.updateDoc(docId, updates);
+						returnData.push({ json: doc });
+					} else if (operation === 'delete') {
+						const docId = this.getNodeParameter('docId', i) as string;
+
+						const success = await client.deleteDoc(docId);
+						returnData.push({ json: { success, docId } });
 					}
 				} else if (resource === 'group') {
 					if (operation === 'create') {

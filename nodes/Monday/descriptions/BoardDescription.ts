@@ -121,6 +121,20 @@ export const boardFields: INodeProperties[] = [
 		description: 'The workspace where the board will be created (optional)',
 	},
 	{
+		displayName: 'Folder ID',
+		name: 'folderId',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['board'],
+				operation: ['create'],
+			},
+		},
+		default: '',
+		description: 'Place board in specific folder (optional)',
+		placeholder: '2015797',
+	},
+	{
 		displayName: 'Template ID',
 		name: 'templateId',
 		type: 'string',

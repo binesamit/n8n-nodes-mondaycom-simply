@@ -436,14 +436,16 @@ export class MondayApiClient {
 		boardName: string,
 		boardKind: string,
 		workspaceId?: string,
+		folderId?: string,
 		templateId?: string,
 	): Promise<any> {
 		const query = `
-			mutation CreateBoard($boardName: String!, $boardKind: BoardKind!, $workspaceId: ID, $templateId: ID) {
+			mutation CreateBoard($boardName: String!, $boardKind: BoardKind!, $workspaceId: ID, $folderId: ID, $templateId: ID) {
 				create_board(
 					board_name: $boardName,
 					board_kind: $boardKind,
 					workspace_id: $workspaceId,
+					folder_id: $folderId,
 					template_id: $templateId
 				) {
 					id
@@ -458,6 +460,7 @@ export class MondayApiClient {
 			boardName,
 			boardKind,
 			workspaceId,
+			folderId,
 			templateId,
 		});
 
@@ -580,7 +583,10 @@ export class MondayApiClient {
 					id
 					name
 					color
-					workspace_id
+					workspace {
+						id
+						name
+					}
 				}
 			}
 		`;
@@ -629,6 +635,123 @@ export class MondayApiClient {
 
 		const response = await this.executeQuery(query, { folderId });
 		return !!response.data.delete_folder;
+	}
+
+	/**
+	 * Create a doc
+	 */
+	async createDoc(
+		docName: string,
+		docKind: string,
+		location: { workspaceId?: string; folderId?: string },
+		blocks?: any[],
+	): Promise<any> {
+		const query = `
+			mutation CreateDoc($docName: String!, $docKind: DocKind!, $workspaceId: ID, $folderId: ID, $blocks: [DocBlockInput!]) {
+				create_doc(
+					name: $docName,
+					kind: $docKind,
+					workspace_id: $workspaceId,
+					folder_id: $folderId,
+					blocks: $blocks
+				) {
+					id
+					name
+					kind
+					url
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, {
+			docName,
+			docKind,
+			workspaceId: location.workspaceId,
+			folderId: location.folderId,
+			blocks,
+		});
+		return response.data.create_doc;
+	}
+
+	/**
+	 * Get a doc
+	 */
+	async getDoc(docId: string): Promise<any> {
+		const query = `
+			query GetDoc($docId: ID!) {
+				docs(ids: [$docId]) {
+					id
+					name
+					kind
+					url
+					created_at
+					updated_at
+					object_id
+					workspace {
+						id
+						name
+					}
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { docId });
+		return response.data.docs[0];
+	}
+
+	/**
+	 * Update a doc
+	 */
+	async updateDoc(docId: string, updates: { name?: string; blocks?: any[] }): Promise<any> {
+		// If updating blocks
+		if (updates.blocks && updates.blocks.length > 0) {
+			const blockQuery = `
+				mutation AddDocBlocks($docId: ID!, $blocks: [DocBlockInput!]!) {
+					create_doc_block(doc_id: $docId, blocks: $blocks) {
+						id
+					}
+				}
+			`;
+			await this.executeQuery(blockQuery, {
+				docId,
+				blocks: updates.blocks,
+			});
+		}
+
+		// If updating name
+		if (updates.name) {
+			const nameQuery = `
+				mutation UpdateDoc($docId: ID!, $name: String!) {
+					update_doc(doc_id: $docId, name: $name) {
+						id
+						name
+					}
+				}
+			`;
+			const response = await this.executeQuery(nameQuery, {
+				docId,
+				name: updates.name,
+			});
+			return response.data.update_doc;
+		}
+
+		return { id: docId, updated: true };
+	}
+
+	/**
+	 * Delete a doc
+	 */
+	async deleteDoc(docId: string): Promise<boolean> {
+		const query = `
+			mutation DeleteDoc($docId: ID!) {
+				delete_doc(doc_id: $docId) {
+					id
+				}
+			}
+		`;
+
+		const response = await this.executeQuery(query, { docId });
+		return !!response.data.delete_doc;
 	}
 
 	/**
