@@ -202,9 +202,9 @@ export async function loadStatusValues(
 }
 
 /**
- * Load columns from board (for createSimple)
+ * Load all columns from board with type info (for Column by Column mode)
  */
-export async function loadBoardColumns(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+export async function loadAllBoardColumnsWithType(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	const boardId = this.getCurrentNodeParameter('board') as string;
 	if (!boardId) return [];
 

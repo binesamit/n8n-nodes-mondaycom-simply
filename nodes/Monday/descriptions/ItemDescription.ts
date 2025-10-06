@@ -92,7 +92,12 @@ export const itemFields: INodeProperties[] = [
 			{
 				name: 'Simple (Dynamic UI)',
 				value: 'simple',
-				description: 'Select values using dynamic UI fields',
+				description: 'Select values using dynamic UI fields (limited to one column per type)',
+			},
+			{
+				name: 'Column by Column',
+				value: 'columnByColumn',
+				description: 'Select any column from board and set its value (supports multiple columns of same type)',
 			},
 		],
 		default: 'advanced',
@@ -171,6 +176,53 @@ export const itemFields: INodeProperties[] = [
 		default: '{}',
 		description: 'Column values as JSON object',
 		placeholder: '{"status": {"label": "Done"}, "text": "Hello"}',
+	},
+
+	// Column by Column mode - fixedCollection
+	{
+		displayName: 'Column Values',
+		name: 'columnValuesList',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		placeholder: 'Add Column Value',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['columnByColumn'],
+			},
+		},
+		default: {},
+		description: 'Add column values - select any column and set value. Format: for status/dropdown enter label, for people enter ID, for timeline enter JSON {"from":"2024-01-01","to":"2024-01-31"}',
+		options: [
+			{
+				name: 'columnValue',
+				displayName: 'Column Value',
+				values: [
+					{
+						displayName: 'Column',
+						name: 'columnId',
+						type: 'options',
+						typeOptions: {
+							loadOptionsMethod: 'loadAllBoardColumnsWithType',
+							loadOptionsDependsOn: ['board'],
+						},
+						default: '',
+						description: 'Select the column to set',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'Enter value - format depends on column type (shown in column name)',
+						placeholder: 'e.g., "Done" for status, 123456 for people ID, {"from":"2024-01-01"} for timeline',
+					},
+				],
+			},
+		],
 	},
 
 	// Simple mode - Status Column

@@ -101,7 +101,7 @@ export class Monday implements INodeType {
 		loadOptions: {
 			loadBoards: loadOptions.loadBoards,
 			loadColumns: loadOptions.loadColumns,
-			loadBoardColumns: loadOptions.loadBoardColumns,
+			loadAllBoardColumnsWithType: loadOptions.loadAllBoardColumnsWithType,
 			loadFormulaColumns: loadOptions.loadFormulaColumns,
 			loadUsers: loadOptions.loadUsers,
 			loadLinkedBoardItems: loadOptionsExtended.loadLinkedBoardItemsExtended,
@@ -157,6 +157,29 @@ export class Monday implements INodeType {
 						if (columnInputMode === 'advanced') {
 							const jsonInput = this.getNodeParameter('columnValuesJson', i) as string;
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
+						} else if (columnInputMode === 'columnByColumn') {
+							// Column by Column mode - build from fixedCollection
+							const columnValuesList = this.getNodeParameter('columnValuesList', i, {}) as any;
+							if (columnValuesList.columnValue && Array.isArray(columnValuesList.columnValue)) {
+								for (const colVal of columnValuesList.columnValue) {
+									const columnId = colVal.columnId;
+									let value = colVal.value;
+
+									// Try to parse JSON if value looks like JSON
+									if (typeof value === 'string') {
+										const trimmed = value.trim();
+										if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+											try {
+												value = JSON.parse(trimmed);
+											} catch (e) {
+												// Keep as string
+											}
+										}
+									}
+
+									columnValues[columnId] = value;
+								}
+							}
 						} else {
 							// Simple mode - build column values from dynamic UI fields
 							columnValues = buildColumnValuesFromSimpleMode(this, i);
@@ -174,6 +197,29 @@ export class Monday implements INodeType {
 						if (columnInputMode === 'advanced') {
 							const jsonInput = this.getNodeParameter('columnValuesJson', i) as string;
 							columnValues = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
+						} else if (columnInputMode === 'columnByColumn') {
+							// Column by Column mode - build from fixedCollection
+							const columnValuesList = this.getNodeParameter('columnValuesList', i, {}) as any;
+							if (columnValuesList.columnValue && Array.isArray(columnValuesList.columnValue)) {
+								for (const colVal of columnValuesList.columnValue) {
+									const columnId = colVal.columnId;
+									let value = colVal.value;
+
+									// Try to parse JSON if value looks like JSON
+									if (typeof value === 'string') {
+										const trimmed = value.trim();
+										if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+											try {
+												value = JSON.parse(trimmed);
+											} catch (e) {
+												// Keep as string
+											}
+										}
+									}
+
+									columnValues[columnId] = value;
+								}
+							}
 						} else {
 							// Simple mode - build column values from dynamic UI fields
 							columnValues = buildColumnValuesFromSimpleMode(this, i);
