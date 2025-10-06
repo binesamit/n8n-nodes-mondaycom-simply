@@ -25,31 +25,46 @@ export function buildColumnValuesFromSmartMode(
 			continue;
 		}
 
+		let processedValue = value;
+
+		// Try to parse JSON strings
+		if (typeof value === 'string') {
+			const trimmed = value.trim();
+			if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+				try {
+					processedValue = JSON.parse(trimmed);
+				} catch (e) {
+					// Keep as string if parsing fails
+					processedValue = value;
+				}
+			}
+		}
+
 		// Check if this is a timeline object with from/to
-		if (typeof value === 'object' && 'from' in value && 'to' in value) {
+		if (typeof processedValue === 'object' && 'from' in processedValue && 'to' in processedValue) {
 			// Timeline column
 			transformedValues[columnId] = {
-				from: value.from,
-				to: value.to,
+				from: processedValue.from,
+				to: processedValue.to,
 			};
 		}
 		// Check if this is an array (multiOptions for board-relation)
-		else if (Array.isArray(value)) {
+		else if (Array.isArray(processedValue)) {
 			// Board Relation column - transform array of IDs to linkedPulseIds format
 			transformedValues[columnId] = {
-				linkedPulseIds: value.map((id) => ({
+				linkedPulseIds: processedValue.map((id) => ({
 					linkedPulseId: typeof id === 'string' ? parseInt(id, 10) : id,
 				})),
 			};
 		}
 		// Check if this is a number
-		else if (typeof value === 'number') {
+		else if (typeof processedValue === 'number') {
 			// Number column - keep as is
-			transformedValues[columnId] = value;
+			transformedValues[columnId] = processedValue;
 		}
 		// Everything else (status, dropdown, text, etc.)
 		else {
-			transformedValues[columnId] = value;
+			transformedValues[columnId] = processedValue;
 		}
 	}
 

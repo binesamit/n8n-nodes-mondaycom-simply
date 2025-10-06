@@ -386,9 +386,7 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-			},
-			hide: {
-				columnInputMode: ['advanced'],
+				columnInputMode: ['simple'],
 			},
 		},
 		default: '',
@@ -406,9 +404,7 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-			},
-			hide: {
-				columnInputMode: ['advanced'],
+				columnInputMode: ['simple'],
 			},
 		},
 		default: [],
@@ -428,9 +424,7 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-			},
-			hide: {
-				columnInputMode: ['advanced'],
+				columnInputMode: ['simple'],
 			},
 		},
 		default: '',
@@ -444,9 +438,7 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-			},
-			hide: {
-				columnInputMode: ['advanced'],
+				columnInputMode: ['simple'],
 			},
 		},
 		default: '',
@@ -460,9 +452,7 @@ export const itemFields: INodeProperties[] = [
 			show: {
 				resource: ['item'],
 				operation: ['create', 'update'],
-			},
-			hide: {
-				columnInputMode: ['advanced'],
+				columnInputMode: ['simple'],
 			},
 		},
 		default: '',

@@ -218,10 +218,30 @@ export class Monday implements INodeType {
 									break;
 
 								case 'board-relation':
+									type = 'string';
+									// Return field with detailed instructions for board relation
+									return {
+										id: column.id,
+										displayName: column.title,
+										required: false,
+										defaultMatch: false,
+										display: true,
+										type: 'string',
+										description: `Board Relation column - Enter item IDs as JSON array: [123, 456] (Column type: ${columnType})`,
+									};
+
 								case 'timeline':
-									// These types are not supported by resourceMapper
-									// They will be available via dynamic UI fields instead
-									return null;
+									type = 'string';
+									// Return field with detailed instructions for timeline
+									return {
+										id: column.id,
+										displayName: column.title,
+										required: false,
+										defaultMatch: false,
+										display: true,
+										type: 'string',
+										description: `Timeline column - Enter as JSON: {"from":"2024-01-01","to":"2024-12-31"} (Column type: ${columnType})`,
+									};
 
 								case 'text':
 								case 'long-text':
