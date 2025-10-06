@@ -718,4 +718,37 @@ export const itemFields: INodeProperties[] = [
 		placeholder: 'New Item',
 	},
 
+	// Column Values for createSimple - using resourceMapper
+	{
+		displayName: 'Columns',
+		name: 'columns',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
+		},
+		required: false,
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['createSimple'],
+			},
+		},
+		typeOptions: {
+			loadOptionsDependsOn: ['board'],
+			resourceMapper: {
+				resourceMapperMethod: 'getBoardColumns',
+				mode: 'add',
+				fieldWords: {
+					singular: 'column',
+					plural: 'columns',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
+			},
+		},
+		description: 'Map the column values for the new item. Each column type will show the appropriate input (dropdown for status, people picker, etc.)',
+	},
+
 ];
