@@ -99,6 +99,31 @@ export const docsFields: INodeProperties[] = [
 		description: 'Privacy setting for the doc',
 	},
 	{
+		displayName: 'Text Direction',
+		name: 'textDirection',
+		type: 'options',
+		options: [
+			{
+				name: 'LTR (Left to Right)',
+				value: 'ltr',
+				description: 'For English, European languages',
+			},
+			{
+				name: 'RTL (Right to Left)',
+				value: 'rtl',
+				description: 'For Hebrew, Arabic, Persian',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['docs'],
+				operation: ['create'],
+			},
+		},
+		default: 'ltr',
+		description: 'Text direction for the document content',
+	},
+	{
 		displayName: 'Place in Folder',
 		name: 'useFolder',
 		type: 'boolean',

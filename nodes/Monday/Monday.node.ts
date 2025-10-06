@@ -356,6 +356,7 @@ export class Monday implements INodeType {
 						const workspaceId = this.getNodeParameter('workspaceId', i) as string;
 						const docName = this.getNodeParameter('docName', i) as string;
 						const docKind = this.getNodeParameter('docKind', i, 'private') as string;
+						const textDirection = this.getNodeParameter('textDirection', i, 'ltr') as string;
 						const useFolder = this.getNodeParameter('useFolder', i, false) as boolean;
 						const folderId = useFolder ? (this.getNodeParameter('folderId', i, '') as string) : '';
 						const addBlocks = this.getNodeParameter('addBlocks', i, false) as boolean;
@@ -388,8 +389,8 @@ export class Monday implements INodeType {
 									return blockData;
 								});
 
-								// Add blocks to the created doc
-								await client.addBlocksToDoc(doc.id, blocks);
+								// Add blocks to the created doc with text direction
+								await client.addBlocksToDoc(doc.id, blocks, textDirection);
 							}
 						}
 
@@ -483,7 +484,8 @@ export class Monday implements INodeType {
 							mentions = result.mentions;
 						}
 
-						const reply = await client.createReply(updateId, updateText, mentions);
+						// Create reply using create_update with parent_id (no item_id needed)
+						const reply = await client.createUpdateReply(updateId, updateText, mentions);
 						returnData.push({ json: reply });
 					} else if (operation === 'generateMentions') {
 						const updateText = this.getNodeParameter('updateText', i) as string;

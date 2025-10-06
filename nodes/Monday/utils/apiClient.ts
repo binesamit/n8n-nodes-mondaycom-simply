@@ -691,9 +691,9 @@ export class MondayApiClient {
 	/**
 	 * Add blocks to a doc using markdown
 	 */
-	async addBlocksToDoc(docId: string, blocks: any[]): Promise<any> {
+	async addBlocksToDoc(docId: string, blocks: any[], textDirection: string = 'ltr'): Promise<any> {
 		// Convert blocks to markdown
-		const markdown = this.convertBlocksToMarkdown(blocks);
+		const markdown = this.convertBlocksToMarkdown(blocks, textDirection);
 
 		const query = `
 			mutation AddContentToDoc($docId: ID!, $markdown: String!) {
@@ -718,10 +718,17 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Convert blocks array to markdown string
+	 * Convert blocks array to markdown string with RTL support
 	 */
-	private convertBlocksToMarkdown(blocks: any[]): string {
+	private convertBlocksToMarkdown(blocks: any[], textDirection: string = 'ltr'): string {
 		const lines: string[] = [];
+		const isRTL = textDirection === 'rtl';
+
+		// Add RTL wrapper if needed
+		if (isRTL) {
+			lines.push('<div dir="rtl" style="text-align: right">');
+			lines.push('');
+		}
 
 		for (const block of blocks) {
 			const content = block.content || '';
@@ -775,6 +782,11 @@ export class MondayApiClient {
 			lines.push('');
 		}
 
+		// Close RTL wrapper
+		if (isRTL) {
+			lines.push('</div>');
+		}
+
 		return lines.join('\n');
 	}
 
@@ -787,12 +799,14 @@ export class MondayApiClient {
 				docs(ids: [$docId]) {
 					id
 					name
-					kind
 					url
 					created_at
-					updated_at
 					object_id
 					workspace {
+						id
+						name
+					}
+					created_by {
 						id
 						name
 					}
@@ -808,39 +822,30 @@ export class MondayApiClient {
 	 * Update a doc
 	 */
 	async updateDoc(docId: string, updates: { name?: string; blocks?: any[] }): Promise<any> {
-		// If updating blocks
+		let result: any = { id: docId };
+
+		// If updating blocks - add them using markdown
 		if (updates.blocks && updates.blocks.length > 0) {
-			const blockQuery = `
-				mutation AddDocBlocks($docId: ID!, $blocks: [DocBlockInput!]!) {
-					create_doc_block(doc_id: $docId, blocks: $blocks) {
-						id
-					}
-				}
-			`;
-			await this.executeQuery(blockQuery, {
-				docId,
-				blocks: updates.blocks,
-			});
+			await this.addBlocksToDoc(docId, updates.blocks);
+			result.blocksAdded = true;
 		}
 
 		// If updating name
 		if (updates.name) {
 			const nameQuery = `
-				mutation UpdateDoc($docId: ID!, $name: String!) {
-					update_doc(doc_id: $docId, name: $name) {
-						id
-						name
-					}
+				mutation UpdateDocName($docId: ID!, $name: String!) {
+					update_doc_name(docId: $docId, name: $name)
 				}
 			`;
 			const response = await this.executeQuery(nameQuery, {
-				docId,
+				docId: parseInt(docId),
 				name: updates.name,
 			});
-			return response.data.update_doc;
+			result.name = updates.name;
+			result.nameUpdated = true;
 		}
 
-		return { id: docId, updated: true };
+		return result;
 	}
 
 	/**
@@ -1024,10 +1029,10 @@ export class MondayApiClient {
 	}
 
 	/**
-	 * Create a reply to an update
+	 * Create a reply to an update (uses create_update with parent_id)
 	 */
-	async createReply(
-		updateId: string,
+	async createUpdateReply(
+		parentUpdateId: string,
 		replyText: string,
 		mentions?: Array<{ id: number; type: string }>,
 	): Promise<any> {
@@ -1041,8 +1046,8 @@ export class MondayApiClient {
 		}
 
 		const query = `
-			mutation CreateReply($updateId: ID!, $body: String!) {
-				create_update_reply(update_id: $updateId, body: $body${mentionsList}) {
+			mutation CreateReply($parentId: ID!, $body: String!) {
+				create_update(parent_id: $parentId, body: $body${mentionsList}) {
 					id
 					body
 					created_at
@@ -1055,10 +1060,10 @@ export class MondayApiClient {
 		`;
 
 		const response = await this.executeQuery(query, {
-			updateId,
+			parentId: parentUpdateId,
 			body: replyText,
 		});
-		return response.data.create_update_reply;
+		return response.data.create_update;
 	}
 
 	/**
