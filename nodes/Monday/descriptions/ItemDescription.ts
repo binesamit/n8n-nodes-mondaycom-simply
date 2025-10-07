@@ -213,7 +213,7 @@ export const itemFields: INodeProperties[] = [
 	// Column by Column mode - fixedCollection with all column types
 	columnFields,
 
-	// Column Values Refresh Notice
+	// Column Values Usage Notice
 	{
 		displayName: 'ℹ️ How to Use Column Values',
 		name: 'columnValuesRefreshNotice',
@@ -227,11 +227,11 @@ export const itemFields: INodeProperties[] = [
 		},
 		default: '',
 		description:
-			'**Using dynamic dropdowns:**\n\n' +
-			'1️⃣ Select a column type and choose the column name\n' +
-			'2️⃣ Click on the value field to load available options\n' +
-			'3️⃣ Values are cached for 5 minutes - reload workflow to refresh\n\n' +
-			'💡 **Tip:** Each column type only shows relevant columns from your board',
+			'**Using Column by Column mode:**\n\n' +
+			'1️⃣ Click "Add Column" below to select a column type\n' +
+			'2️⃣ Choose the column name from your board\n' +
+			'3️⃣ Click the value field - options load automatically from Monday.com\n\n' +
+			'💡 **Tip:** Each column type shows only relevant columns (e.g., Status Column shows only status fields)',
 	},
 
 	// Removed: Smart mode (resourceMapper) and Simple mode (dynamic UI) fields

@@ -361,10 +361,8 @@ export async function loadStatusValuesForSelectedColumn(
 
 	if (!boardId || !columnId) return [];
 
-	const cacheKey = CacheManager.statusValuesKey(boardId, columnId);
-	const cached = CacheManager.get<INodePropertyOptions[]>(cacheKey);
-	if (cached) return cached;
-
+	// No cache for values - always fetch fresh for better UX
+	// Users expect immediate updates when selecting a column
 	const credentials = await this.getCredentials('mondayApi');
 	const apiVersion = (credentials.apiVersion as string) || '2023-10';
 	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
@@ -383,13 +381,10 @@ export async function loadStatusValuesForSelectedColumn(
 	}
 
 	const settings = JSON.parse(column.settings_str);
-	const options = Object.entries(settings.labels || {}).map(([index, label]) => ({
+	return Object.entries(settings.labels || {}).map(([index, label]) => ({
 		name: label as string,
 		value: label as string, // Return label text, not index
 	}));
-
-	CacheManager.set(cacheKey, options);
-	return options;
 }
 
 /**
@@ -426,11 +421,7 @@ export async function loadDropdownValuesForSelectedColumn(
 
 	if (!boardId || !columnId) return [];
 
-	// Check cache first
-	const cacheKey = `dropdown:${boardId}:${columnId}:values`;
-	const cached = CacheManager.get<INodePropertyOptions[]>(cacheKey);
-	if (cached) return cached;
-
+	// No cache - always fetch fresh for better UX
 	const credentials = await this.getCredentials('mondayApi');
 	const apiVersion = (credentials.apiVersion as string) || '2023-10';
 	const autoUpgrade = (credentials.autoUpgrade as boolean) ?? true;
@@ -451,26 +442,20 @@ export async function loadDropdownValuesForSelectedColumn(
 	const settings = JSON.parse(column.settings_str);
 	const labels = settings.labels || {};
 
-	let options: INodePropertyOptions[];
-
 	// Monday dropdown settings structure: {1: "בדיקה 1", 2: "בדיקה 2"}
 	// We need to return the label text as the value, not the ID
 	if (typeof labels === 'object' && !Array.isArray(labels)) {
-		options = Object.entries(labels).map(([id, name]) => ({
+		return Object.entries(labels).map(([id, name]) => ({
 			name: name as string,
 			value: name as string, // Monday expects the label text, not the ID
 		}));
-	} else {
-		// Fallback for array format
-		options = labels.map((label: any) => ({
-			name: typeof label === 'string' ? label : label.name,
-			value: typeof label === 'string' ? label : label.name,
-		}));
 	}
 
-	// Cache for 5 minutes
-	CacheManager.set(cacheKey, options, 5 * 60 * 1000);
-	return options;
+	// Fallback for array format
+	return labels.map((label: any) => ({
+		name: typeof label === 'string' ? label : label.name,
+		value: typeof label === 'string' ? label : label.name,
+	}));
 }
 
 /**
@@ -535,22 +520,14 @@ export async function loadLinkedBoardItemsForSelectedColumn(
 		return [];
 	}
 
-	// Add caching for board relation items
-	const cacheKey = `boardRelation:${boardId}:${columnId}:items`;
-	const cached = CacheManager.get<INodePropertyOptions[]>(cacheKey);
-	if (cached) return cached;
-
+	// No cache - always fetch fresh for better UX
 	// Fetch items from linked boards
 	const items = await client.getItemsFromBoards(linkedBoardIds);
 
-	const options = items.map((item) => ({
+	return items.map((item) => ({
 		name: `${item.name} (#${item.id})`,
 		value: item.id,
 	}));
-
-	// Cache for 5 minutes
-	CacheManager.set(cacheKey, options, 5 * 60 * 1000);
-	return options;
 }
 
 /**
