@@ -213,6 +213,27 @@ export const itemFields: INodeProperties[] = [
 	// Column by Column mode - fixedCollection with all column types
 	columnFields,
 
+	// Column Values Refresh Notice
+	{
+		displayName: 'ℹ️ How to Use Column Values',
+		name: 'columnValuesRefreshNotice',
+		type: 'notice',
+		displayOptions: {
+			show: {
+				resource: ['item'],
+				operation: ['create', 'update'],
+				columnInputMode: ['columnByColumn'],
+			},
+		},
+		default: '',
+		description:
+			'**Using dynamic dropdowns:**\n\n' +
+			'1️⃣ Select a column type and choose the column name\n' +
+			'2️⃣ Click on the value field to load available options\n' +
+			'3️⃣ Values are cached for 5 minutes - reload workflow to refresh\n\n' +
+			'💡 **Tip:** Each column type only shows relevant columns from your board',
+	},
+
 	// Removed: Smart mode (resourceMapper) and Simple mode (dynamic UI) fields
 	// Skipping to File Column Notice below
 
